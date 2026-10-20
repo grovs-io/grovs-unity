@@ -44,7 +44,7 @@ namespace GrovsSDK.Editor.Android
             return firebaseUnityPresent ? GrovsAndroidPushMode.FirebaseUnity : GrovsAndroidPushMode.Standalone;
         }
 
-        static bool FirebaseUnityPresent() =>
+        public static bool FirebaseUnityPresent() =>
             Type.GetType(FirebaseUnityMessagingType) != null ||
             AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetType("Firebase.Messaging.FirebaseMessaging") != null);
 

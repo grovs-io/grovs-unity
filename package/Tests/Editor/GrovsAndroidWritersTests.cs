@@ -254,6 +254,16 @@ namespace GrovsSDK.Tests
             Assert.IsFalse(GrovsAndroidBuildProcessors.ShouldIncludeFirebaseAar(GrovsAndroidPushMode.Standalone));
         }
 
+        [Test]
+        public void PushModeCheck_FirebaseUnityForcedWithoutFirebase_Errors()
+        {
+            Assert.AreEqual("Grovs: Android push mode is Firebase Unity but Firebase Messaging is not installed.",
+                GrovsAndroidBuildProcessors.CheckPushMode(GrovsAndroidPushMode.FirebaseUnity, false));
+            Assert.IsNull(GrovsAndroidBuildProcessors.CheckPushMode(GrovsAndroidPushMode.FirebaseUnity, true));
+            Assert.IsNull(GrovsAndroidBuildProcessors.CheckPushMode(GrovsAndroidPushMode.Auto, false));
+            Assert.IsNull(GrovsAndroidBuildProcessors.CheckPushMode(GrovsAndroidPushMode.Standalone, false));
+        }
+
         const string Agp742Root =
             "plugins {\n" +
             "    id 'com.android.application' version '7.4.2' apply false\n" +
