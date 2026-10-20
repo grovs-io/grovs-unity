@@ -32,9 +32,5 @@ native/android/**/build/
 *.xcodeproj/xcuserdata
 .DS_Store
 
-# Local sample manifest with a test key
-sample/Assets/Plugins/Android/AndroidManifest.xml
-sample/Assets/Plugins/Android/AndroidManifest.xml.meta
-
 # EDM4U resolver state
 sample/ProjectSettings/AndroidResolverDependencies.xml
