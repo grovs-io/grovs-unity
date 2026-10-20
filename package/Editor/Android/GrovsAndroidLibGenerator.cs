@@ -21,7 +21,7 @@ namespace GrovsSDK.Editor.Android
             if (Directory.Exists(dir)) Directory.Delete(dir, true);
             Directory.CreateDirectory(dir);
 
-            var pushMode = ResolvePushMode(c.AndroidPushMode, FirebaseUnityPresent());
+            var pushMode = ResolvePushMode(c.AndroidPushMode);
             GrovsAndroidXml.Save(Manifest(c, pushMode), Path.Combine(dir, "AndroidManifest.xml"));
             File.WriteAllText(Path.Combine(dir, "project.properties"), "android.library=true\n");
 
@@ -34,6 +34,9 @@ namespace GrovsSDK.Editor.Android
                     GrovsGoogleServicesConverter.Convert(json, packageName));
             }
         }
+
+        public static GrovsAndroidPushMode ResolvePushMode(GrovsAndroidPushMode mode) =>
+            ResolvePushMode(mode, FirebaseUnityPresent());
 
         public static GrovsAndroidPushMode ResolvePushMode(GrovsAndroidPushMode mode, bool firebaseUnityPresent)
         {

@@ -231,6 +231,22 @@ namespace GrovsSDK.Tests
             Assert.IsNull(GrovsAndroidBuildProcessors.CheckTargetApi(AndroidSdkVersions.AndroidApiLevelAuto, 34));
         }
 
+        [Test]
+        public void PushWarning_StandaloneWithoutGoogleServices()
+        {
+            _settings.googleServicesJsonPath = " ";
+            StringAssert.Contains("google-services.json",
+                GrovsAndroidBuildProcessors.PushWarning(Config(), GrovsAndroidPushMode.Standalone));
+            Assert.IsNull(GrovsAndroidBuildProcessors.PushWarning(Config(), GrovsAndroidPushMode.FirebaseUnity));
+
+            _settings.pushEnabled = false;
+            Assert.IsNull(GrovsAndroidBuildProcessors.PushWarning(Config(), GrovsAndroidPushMode.Standalone));
+
+            _settings.pushEnabled = true;
+            _settings.googleServicesJsonPath = "Assets/google-services.json";
+            Assert.IsNull(GrovsAndroidBuildProcessors.PushWarning(Config(), GrovsAndroidPushMode.Standalone));
+        }
+
         const string Agp742Root =
             "plugins {\n" +
             "    id 'com.android.application' version '7.4.2' apply false\n" +
@@ -262,6 +278,53 @@ namespace GrovsSDK.Tests
             var withR8 = "buildscript {\n    dependencies {\n        classpath 'com.android.tools:r8:8.3.37'\n    }\n}\n\n" +
                          Agp742Root;
             Assert.AreEqual(withR8, GrovsRootGradlePatcher.Apply(withR8));
+        }
+        [Test]
+        public void RootGradle_UnknownAgpVersion_WarnsAndSkips()
+        {
+            var dynamic = Agp742Root.Replace("'7.4.2'", "\"$agp\"");
+            Assert.AreEqual(dynamic, GrovsRootGradlePatcher.Apply(dynamic, out var warning));
+            Assert.AreEqual(GrovsRootGradlePatcher.UnknownVersionWarning, warning);
+
+            GrovsRootGradlePatcher.Apply(Agp742Root, out var none);
+            Assert.IsNull(none);
+        }
+
+        [Test]
+        public void RootGradle_ExistingBuildScriptWithDependencies_GetsClasspathInside()
+        {
+            var input =
+                "buildscript {\n" +
+                "    repositories {\n        mavenCentral()\n    }\n" +
+                "    dependencies {\n        classpath 'com.example:tool:1.0'\n    }\n" +
+                "}\n\n" + Agp742Root;
+            var expected =
+                "buildscript {\n" +
+                "    repositories {\n        mavenCentral()\n        google()\n    }\n" +
+                "    dependencies {\n        classpath 'com.example:tool:1.0'\n" +
+                "        classpath 'com.android.tools:r8:8.5.35'\n    }\n" +
+                "}\n\n" + Agp742Root;
+
+            var patched = GrovsRootGradlePatcher.Apply(input);
+            Assert.AreEqual(expected, patched);
+            Assert.AreEqual(patched, GrovsRootGradlePatcher.Apply(patched));
+        }
+
+        [Test]
+        public void RootGradle_ExistingBuildScriptWithoutDependencies_AddsDependenciesBlock()
+        {
+            var input = "buildscript {\n    ext.kotlin = '1.9.0'\n}\n\n" + Agp742Root;
+            var expected =
+                "buildscript {\n" +
+                "    repositories {\n        google()\n    }\n" +
+                "    ext.kotlin = '1.9.0'\n" +
+                "    dependencies {\n        classpath 'com.android.tools:r8:8.5.35'\n    }\n" +
+                "}\n\n" + Agp742Root;
+
+            var patched = GrovsRootGradlePatcher.Apply(input);
+            Assert.AreEqual(expected, patched);
+            Assert.AreEqual(1, patched.Split(new[] { "buildscript {" }, StringSplitOptions.None).Length - 1);
+            Assert.AreEqual(patched, GrovsRootGradlePatcher.Apply(patched));
         }
     }
 }

@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditor.Android;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+using UnityEngine;
 
 namespace GrovsSDK.Editor.Android
 {
@@ -24,6 +25,10 @@ namespace GrovsSDK.Editor.Android
             var config = GrovsBuildValidation.Run(report);
             var apiError = CheckTargetApi(PlayerSettings.Android.targetSdkVersion, HighestInstalledApi());
             if (apiError != null) throw new BuildFailedException(apiError);
+
+            var pushMode = GrovsAndroidLibGenerator.ResolvePushMode(config.AndroidPushMode);
+            var pushWarning = PushWarning(config, pushMode);
+            if (pushWarning != null) Debug.LogWarning(pushWarning);
 
             GrovsAndroidLibGenerator.Generate(LibraryPath, config);
             AssetDatabase.ImportAsset(LibraryPath, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
@@ -49,6 +54,14 @@ namespace GrovsSDK.Editor.Android
             var target = level == AndroidSdkVersions.AndroidApiLevelAuto ? highestInstalled : (int)level;
             if (target <= 0 || target >= MinTargetApi) return null;
             return "Grovs: Android target API level must be " + MinTargetApi + " or higher.";
+        }
+
+        public static string PushWarning(GrovsBuildConfig c, GrovsAndroidPushMode resolvedMode)
+        {
+            if (!c.PushEnabled || resolvedMode != GrovsAndroidPushMode.Standalone || c.GoogleServicesJsonPath.Length > 0)
+                return null;
+            return "Grovs: push is on in Standalone mode but the google-services.json path is empty " +
+                   "(Project Settings > Grovs), so Firebase will not start.";
         }
 
         static void Rewrite(string path, Func<string, string> transform)
