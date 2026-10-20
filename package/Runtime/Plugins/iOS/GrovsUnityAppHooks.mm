@@ -1,6 +1,8 @@
 #import <UIKit/UIKit.h>
+#import <UserNotifications/UserNotifications.h>
 #import <objc/runtime.h>
 #import "AppDelegateListener.h"
+#import "GrovsUnityNotificationProxy.h"
 #import "UnityAppController.h"
 
 extern "C" {
@@ -8,6 +10,31 @@ void GrovsUnity_Internal_AutoInit(void);
 bool GrovsUnity_Internal_OpenURL(void* nsurl);
 bool GrovsUnity_Internal_ContinueUserActivity(void* nsUserActivity);
 void GrovsUnity_Internal_SetPushToken(void* nsdata);
+bool GrovsUnity_Internal_HandleNotificationResponse(void* unNotificationResponse);
+}
+
+static BOOL GrovsUnityOwnsNotificationDelegate(void)
+{
+    id value = NSBundle.mainBundle.infoDictionary[@"GrovsUnityOwnNotificationDelegate"];
+    if ([value isKindOfClass:[NSNumber class]])
+        return [value boolValue];
+    if ([value isKindOfClass:[NSString class]])
+    {
+        NSString* text = [[value stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet] lowercaseString];
+        if ([text isEqualToString:@"false"] || [text isEqualToString:@"no"] || [text isEqualToString:@"0"])
+            return NO;
+    }
+    return YES;
+}
+
+static void GrovsUnityInstallNotificationProxy(void)
+{
+    if (!GrovsUnityOwnsNotificationDelegate())
+        return;
+    [GrovsUnityNotificationProxy installOn:[UNUserNotificationCenter currentNotificationCenter]
+                                onResponse:^BOOL(UNNotificationResponse* response) {
+        return GrovsUnity_Internal_HandleNotificationResponse((__bridge void*)response);
+    }];
 }
 
 typedef void (^GrovsUnityRestorationHandler)(NSArray<id<UIUserActivityRestoring>>* _Nullable);
@@ -57,6 +84,13 @@ static void GrovsUnityHookContinueUserActivity(void)
     static GrovsUnityAppHooks* listener = nil;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
+        // Posted by UnityAppController from willFinishLaunchingWithOptions, before didFinishLaunching returns.
+        [[NSNotificationCenter defaultCenter] addObserverForName:kUnityWillFinishLaunchingWithOptions
+                                                          object:nil
+                                                           queue:nil
+                                                      usingBlock:^(__unused NSNotification* notification) {
+            GrovsUnityInstallNotificationProxy();
+        }];
         [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification
                                                           object:nil
                                                            queue:nil
