@@ -5,3 +5,7 @@ native/android/build/
 native/android/bridge/build/
 native/android/local.properties
 *.aar
+
+# iOS bridge
+.build/
+.swiftpm/
