@@ -11,3 +11,23 @@ native/android/local.properties
 # iOS bridge
 .build/
 .swiftpm/
+
+# Unity sample project
+sample/Library/
+sample/Temp/
+sample/Logs/
+sample/UserSettings/
+sample/Obj/
+sample/obj/
+sample/*.csproj
+sample/*.sln
+package/Runtime/Plugins/Android/*.aar.meta
+
+# Build output
+build/
+**/GrovsConfig.androidlib/
+**/GrovsConfig.androidlib.meta
+native/android/**/build/
+.gradle/
+*.xcodeproj/xcuserdata
+.DS_Store
