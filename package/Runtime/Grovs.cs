@@ -234,14 +234,14 @@ namespace GrovsSDK
 
         internal static NativeMessageRouter EnsureStarted()
         {
-            if (_platform == null) Start(GrovsBootstrap.CreatePlatform());
+            if (_platform == null) Start(GrovsBootstrap.CreatePlatform);
             return _router;
         }
 
         internal static void ResetForTests(IGrovsPlatform platform)
         {
             ResetState();
-            Start(platform);
+            Start(() => platform);
         }
 
         internal static void ResetState()
@@ -256,11 +256,21 @@ namespace GrovsSDK
             ShouldShowInAppMessage = null;
         }
 
-        static void Start(IGrovsPlatform platform)
+        // A broken native bridge must not break the game, so it falls back to the stub.
+        static void Start(Func<IGrovsPlatform> createPlatform)
         {
             _router = new NativeMessageRouter();
-            _platform = platform;
-            platform.Start(_router.Enqueue, InvokeShouldShow);
+            try
+            {
+                _platform = createPlatform();
+                _platform.Start(_router.Enqueue, InvokeShouldShow);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("[Grovs] The native bridge failed to start, so Grovs is disabled: " + e);
+                _platform = new GrovsStub();
+                _platform.Start(_router.Enqueue, InvokeShouldShow);
+            }
         }
 
         /// <summary>Runs on the native thread, so it calls the delegate directly.</summary>

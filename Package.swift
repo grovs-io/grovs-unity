@@ -15,7 +15,17 @@ let package = Package(
         .target(
             name: "GrovsUnityBridge",
             dependencies: [.product(name: "Grovs", package: "Grovs")],
-            path: "package/Runtime/Plugins/iOS/GrovsUnityBridge"),
+            path: "package/Runtime/Plugins/iOS/GrovsUnityBridge",
+            // Unity writes a .meta file next to every source.
+            exclude: [
+                "GrovsFacade.swift.meta",
+                "GrovsUnityBridge.swift.meta",
+                "GrovsUnityCodec.swift.meta",
+                "GrovsUnityConfig.swift.meta",
+                "GrovsUnityExports.swift.meta",
+                "GrovsUnityMessageQueue.swift.meta",
+                "RealGrovsFacade.swift.meta",
+            ]),
         .testTarget(
             name: "GrovsUnityBridgeTests",
             dependencies: ["GrovsUnityBridge"],
@@ -23,6 +33,11 @@ let package = Package(
         .target(
             name: "GrovsUnityHooks",
             path: "package/Runtime/Plugins/iOS/GrovsUnityHooks",
+            exclude: [
+                "GrovsUnityNotificationProxy.m.meta",
+                "include.meta",
+                "include/GrovsUnityNotificationProxy.h.meta",
+            ],
             publicHeadersPath: "include"),
         .testTarget(
             name: "GrovsUnityHooksTests",

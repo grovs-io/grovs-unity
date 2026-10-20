@@ -21,8 +21,27 @@ public static class GrovsSampleBuild
 
     public static void BuildIOS()
     {
-        Run(() => Build(BuildTarget.iOS, Path.Combine(RepoRoot, "build", "ios")));
+        Run(() => Build(BuildTarget.iOS, IOSOutputPath));
     }
+
+    public static void BuildIOSSimulator()
+    {
+        Run(() =>
+        {
+            var previous = PlayerSettings.iOS.sdkVersion;
+            PlayerSettings.iOS.sdkVersion = iOSSdkVersion.SimulatorSDK;
+            try
+            {
+                Build(BuildTarget.iOS, IOSOutputPath);
+            }
+            finally
+            {
+                PlayerSettings.iOS.sdkVersion = previous;
+            }
+        });
+    }
+
+    static string IOSOutputPath => Path.Combine(RepoRoot, "build", "ios");
 
     static void Build(BuildTarget target, string outputPath)
     {

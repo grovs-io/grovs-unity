@@ -341,5 +341,21 @@ namespace GrovsSDK.Tests
             Assert.IsFalse(purchase.Result);
             Assert.AreEqual(GrovsErrorCode.UnsupportedPlatform, Unwrap(details).Error.Code);
         }
+
+        [Test]
+        public void PlatformThatFailsToStart_FallsBackToStub()
+        {
+            LogAssert.Expect(LogType.Error, new Regex(@"^\[Grovs\] The native bridge failed to start.*bridge missing"));
+            var broken = new FakePlatform { ThrowOnStart = true };
+
+            Grovs.ResetForTests(broken);
+
+            Assert.IsFalse(Grovs.IsSupportedPlatform);
+            Assert.IsFalse(Grovs.IsEnabled);
+            Assert.AreEqual(0, broken.Count("IsEnabled"));
+            var task = Grovs.GenerateLinkAsync(new GenerateLinkOptions());
+            Grovs.Router.Drain();
+            Assert.AreEqual(GrovsErrorCode.UnsupportedPlatform, Unwrap(task).Error.Code);
+        }
     }
 }

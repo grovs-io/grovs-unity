@@ -12,6 +12,7 @@ namespace GrovsSDK.Tests
         public Func<string, bool> ShouldShow;
         public bool Supported = true;
         public bool HandleUrlResult = true;
+        public bool ThrowOnStart;
 
         public void Emit(string type, string json) => OnMessage(type, json);
 
@@ -31,9 +32,10 @@ namespace GrovsSDK.Tests
 
         public void Start(Action<string, string> onMessage, Func<string, bool> shouldShowInApp)
         {
+            Record(nameof(Start));
+            if (ThrowOnStart) throw new InvalidOperationException("bridge missing");
             OnMessage = onMessage;
             ShouldShow = shouldShowInApp;
-            Record(nameof(Start));
         }
 
         public void SetEnabled(bool enabled) => Record(nameof(SetEnabled), enabled);

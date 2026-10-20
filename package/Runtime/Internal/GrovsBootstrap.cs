@@ -20,7 +20,7 @@ namespace GrovsSDK.Internal
         public static IGrovsPlatform CreatePlatform()
         {
 #if UNITY_IOS && !UNITY_EDITOR
-            return new GrovsStub();
+            return new GrovsIOS();
 #elif UNITY_ANDROID && !UNITY_EDITOR
             return new GrovsAndroid();
 #else

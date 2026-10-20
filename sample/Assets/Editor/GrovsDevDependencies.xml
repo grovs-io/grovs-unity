@@ -28,4 +28,9 @@
     <androidPackage spec="androidx.lifecycle:lifecycle-process:2.6.2" />
     <androidPackage spec="org.jetbrains.kotlin:kotlin-stdlib:1.9.24" />
   </androidPackages>
+
+  <!-- GrovsDevOverrides points this at a local checkout when GROVS_IOS_POD_PATH is set. -->
+  <iosPods>
+    <iosPod name="Grovs" version="~> 3.1" minTargetSdk="13.0" />
+  </iosPods>
 </dependencies>
