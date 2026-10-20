@@ -3,6 +3,8 @@
 native/android/.gradle/
 native/android/build/
 native/android/bridge/build/
+native/android/firebase/build/
+native/android/firebase-stub/build/
 native/android/local.properties
 *.aar
 

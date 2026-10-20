@@ -16,3 +16,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "grovs-unity-android"
 include(":bridge")
+include(":firebase-stub")
+include(":firebase")
