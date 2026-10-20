@@ -247,6 +247,13 @@ namespace GrovsSDK.Tests
             Assert.IsNull(GrovsAndroidBuildProcessors.PushWarning(Config(), GrovsAndroidPushMode.Standalone));
         }
 
+        [Test]
+        public void FirebaseAar_IncludedOnlyInFirebaseUnityMode()
+        {
+            Assert.IsTrue(GrovsAndroidBuildProcessors.ShouldIncludeFirebaseAar(GrovsAndroidPushMode.FirebaseUnity));
+            Assert.IsFalse(GrovsAndroidBuildProcessors.ShouldIncludeFirebaseAar(GrovsAndroidPushMode.Standalone));
+        }
+
         const string Agp742Root =
             "plugins {\n" +
             "    id 'com.android.application' version '7.4.2' apply false\n" +

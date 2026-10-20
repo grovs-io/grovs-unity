@@ -15,6 +15,7 @@ namespace GrovsSDK.Editor.Android
     {
         public const string LibraryPath = "Assets/Plugins/Android/GrovsConfig.androidlib";
         const int MinTargetApi = 34;
+        const string FirebaseAarName = "grovs-unity-firebase.aar";
 
         public int callbackOrder => 0;
 
@@ -29,6 +30,7 @@ namespace GrovsSDK.Editor.Android
             var pushMode = GrovsAndroidLibGenerator.ResolvePushMode(config.AndroidPushMode);
             var pushWarning = PushWarning(config, pushMode);
             if (pushWarning != null) Debug.LogWarning(pushWarning);
+            IncludeFirebaseAar(ShouldIncludeFirebaseAar(pushMode));
 
             GrovsAndroidLibGenerator.Generate(LibraryPath, config);
             AssetDatabase.ImportAsset(LibraryPath, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
@@ -62,6 +64,19 @@ namespace GrovsSDK.Editor.Android
                 return null;
             return "Grovs: push is on in Standalone mode but the google-services.json path is empty " +
                    "(Project Settings > Grovs), so Firebase will not start.";
+        }
+
+        // The Firebase Unity AAR extends a Firebase Unity class, so it only builds when Firebase Unity is there.
+        public static bool ShouldIncludeFirebaseAar(GrovsAndroidPushMode resolvedMode) =>
+            resolvedMode == GrovsAndroidPushMode.FirebaseUnity;
+
+        static void IncludeFirebaseAar(bool include)
+        {
+            var importer = PluginImporter.GetAllImporters()
+                .FirstOrDefault(i => Path.GetFileName(i.assetPath) == FirebaseAarName);
+            if (importer == null || importer.GetCompatibleWithPlatform(BuildTarget.Android) == include) return;
+            importer.SetCompatibleWithPlatform(BuildTarget.Android, include);
+            importer.SaveAndReimport();
         }
 
         static void Rewrite(string path, Func<string, string> transform)
