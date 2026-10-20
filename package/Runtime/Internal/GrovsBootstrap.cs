@@ -22,7 +22,7 @@ namespace GrovsSDK.Internal
 #if UNITY_IOS && !UNITY_EDITOR
             return new GrovsStub();
 #elif UNITY_ANDROID && !UNITY_EDITOR
-            return new GrovsStub();
+            return new GrovsAndroid();
 #else
             return new GrovsStub();
 #endif
