@@ -221,6 +221,22 @@ namespace GrovsSDK
 
         #region Internal
 
+        internal static bool IsSceneTrackingEnabled => Platform.IsSceneTrackingEnabled();
+
+#if UNITY_EDITOR
+        /// <summary>Delivers a fake incoming link exactly like a native one. Editor only.</summary>
+        internal static void SimulateDeeplink(string link, string dataJson)
+        {
+            var data = string.IsNullOrWhiteSpace(dataJson)
+                ? new Dictionary<string, object>()
+                : GrovsJson.Parse(dataJson);
+            if (!(data is Dictionary<string, object>))
+                throw new ArgumentException("Data must be a JSON object.", nameof(dataJson));
+            var message = new Dictionary<string, object> { { "link", link }, { "data", data }, { "tracking", null } };
+            Router.Enqueue("deeplink", GrovsJson.Serialize(message));
+        }
+#endif
+
         internal static NativeMessageRouter Router => EnsureStarted();
 
         static IGrovsPlatform Platform

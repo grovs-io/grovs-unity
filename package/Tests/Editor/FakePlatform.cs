@@ -13,6 +13,7 @@ namespace GrovsSDK.Tests
         public bool Supported = true;
         public bool HandleUrlResult = true;
         public bool ThrowOnStart;
+        public bool SceneTracking;
 
         public void Emit(string type, string json) => OnMessage(type, json);
 
@@ -40,7 +41,7 @@ namespace GrovsSDK.Tests
 
         public void SetEnabled(bool enabled) => Record(nameof(SetEnabled), enabled);
         public bool IsEnabled() => Returns(true, nameof(IsEnabled));
-        public bool IsSceneTrackingEnabled() => Returns(false, nameof(IsSceneTrackingEnabled));
+        public bool IsSceneTrackingEnabled() => Returns(SceneTracking, nameof(IsSceneTrackingEnabled));
         public void SetLogLevel(int level) => Record(nameof(SetLogLevel), level);
         public void SetUserIdentifier(string id) => Record(nameof(SetUserIdentifier), id);
         public void SetUserAttributes(string json) => Record(nameof(SetUserAttributes), json);
