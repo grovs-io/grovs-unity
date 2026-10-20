@@ -4,24 +4,26 @@ apply plugin: 'com.android.library'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 // Android Resolver Dependencies Start
-    implementation 'androidx.appcompat:appcompat:1.5.0' // Assets/Editor/GrovsDevDependencies.xml:12
-    implementation 'androidx.core:core-ktx:1.13.1' // Assets/Editor/GrovsDevDependencies.xml:11
-    implementation 'androidx.fragment:fragment-ktx:1.8.4' // Assets/Editor/GrovsDevDependencies.xml:13
-    implementation 'androidx.lifecycle:lifecycle-livedata-core-ktx:2.6.2' // Assets/Editor/GrovsDevDependencies.xml:17
-    implementation 'androidx.lifecycle:lifecycle-process:2.6.2' // Assets/Editor/GrovsDevDependencies.xml:28
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2' // Assets/Editor/GrovsDevDependencies.xml:16
-    implementation 'androidx.navigation:navigation-runtime-ktx:2.8.3' // Assets/Editor/GrovsDevDependencies.xml:15
-    implementation 'androidx.startup:startup-runtime:1.1.1' // Assets/Editor/GrovsDevDependencies.xml:27
-    implementation 'androidx.webkit:webkit:1.11.0' // Assets/Editor/GrovsDevDependencies.xml:14
-    implementation 'com.android.installreferrer:installreferrer:2.1' // Assets/Editor/GrovsDevDependencies.xml:24
-    implementation 'com.google.code.gson:gson:2.9.0' // Assets/Editor/GrovsDevDependencies.xml:23
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0' // Assets/Editor/GrovsDevDependencies.xml:22
-    implementation 'com.squareup.okhttp3:okhttp:4.9.0' // Assets/Editor/GrovsDevDependencies.xml:21
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0' // Assets/Editor/GrovsDevDependencies.xml:20
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0' // Assets/Editor/GrovsDevDependencies.xml:19
-    implementation 'io.grovs:Grovs:3.1.0' // Assets/Editor/GrovsDevDependencies.xml:8
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24' // Assets/Editor/GrovsDevDependencies.xml:29
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3' // Assets/Editor/GrovsDevDependencies.xml:18
+    implementation 'androidx.appcompat:appcompat:1.5.0' // Assets/Editor/GrovsDevDependencies.xml:14
+    implementation 'androidx.core:core-ktx:1.13.1' // Assets/Editor/GrovsDevDependencies.xml:13
+    implementation 'androidx.fragment:fragment-ktx:1.8.4' // Assets/Editor/GrovsDevDependencies.xml:15
+    implementation 'androidx.lifecycle:lifecycle-livedata-core-ktx:2.6.2' // Assets/Editor/GrovsDevDependencies.xml:19
+    implementation 'androidx.lifecycle:lifecycle-process:2.6.2' // Packages/com.grovs.sdk/Editor/GrovsDependencies.xml:12
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.2' // Assets/Editor/GrovsDevDependencies.xml:18
+    implementation 'androidx.navigation:navigation-runtime-ktx:2.8.3' // Assets/Editor/GrovsDevDependencies.xml:17
+    implementation 'androidx.startup:startup-runtime:1.1.1' // Packages/com.grovs.sdk/Editor/GrovsDependencies.xml:8
+    implementation 'androidx.webkit:webkit:1.11.0' // Assets/Editor/GrovsDevDependencies.xml:16
+    implementation 'com.android.installreferrer:installreferrer:2.1' // Assets/Editor/GrovsDevDependencies.xml:26
+    implementation 'com.google.android.play:review-ktx:2.0.2' // Packages/com.grovs.sdk/Editor/GrovsDependencies.xml:9
+    implementation 'com.google.code.gson:gson:2.9.0' // Assets/Editor/GrovsDevDependencies.xml:25
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0' // Assets/Editor/GrovsDevDependencies.xml:24
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0' // Assets/Editor/GrovsDevDependencies.xml:23
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0' // Assets/Editor/GrovsDevDependencies.xml:22
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0' // Assets/Editor/GrovsDevDependencies.xml:21
+    // implementation 'io.grovs:Grovs:[3.1.0,3.2)' // Packages/com.grovs.sdk/Editor/GrovsDependencies.xml:7
+    implementation 'io.grovs:Grovs:3.1.0' // Assets/Editor/GrovsDevDependencies.xml:10
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.9.24' // Packages/com.grovs.sdk/Editor/GrovsDependencies.xml:13
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3' // Assets/Editor/GrovsDevDependencies.xml:20
 // Android Resolver Dependencies End
 **DEPS**}
 

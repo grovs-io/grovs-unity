@@ -36,6 +36,17 @@ namespace GrovsSDK.Editor.Android
 
             GrovsAndroidLibGenerator.Generate(LibraryPath, config);
             AssetDatabase.ImportAsset(LibraryPath, ImportAssetOptions.ImportRecursive | ImportAssetOptions.ForceUpdate);
+            SyncPushDependencies(config, pushMode);
+        }
+
+        // EDM4U resolves on build only when its auto-resolve setting is on, so a changed file is resolved here.
+        static void SyncPushDependencies(GrovsBuildConfig config, GrovsAndroidPushMode pushMode)
+        {
+            var path = GrovsAndroidLibGenerator.PushDependenciesPath;
+            if (!GrovsAndroidLibGenerator.WritePushDependencies(path, config, pushMode)) return;
+            if (File.Exists(path)) AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            if (GrovsEdm4uCheck.Present && !GrovsEdm4uCheck.ResolveAndroid())
+                throw new BuildFailedException("Grovs: EDM4U Android dependency resolution failed after updating " + path + ".");
         }
 
         public void OnPostGenerateGradleAndroidProject(string path)

@@ -130,6 +130,25 @@ namespace GrovsSDK.Tests
         }
 
         [Test]
+        public void PushDependencies_StandaloneOnly()
+        {
+            var path = Path.Combine(_dir, "Editor", "GrovsPushDependencies.xml");
+
+            Assert.IsTrue(GrovsAndroidLibGenerator.WritePushDependencies(path, Config(), GrovsAndroidPushMode.Standalone));
+            StringAssert.Contains("<androidPackage spec=\"com.google.firebase:firebase-messaging:24.0.3\" />",
+                File.ReadAllText(path));
+            Assert.IsFalse(GrovsAndroidLibGenerator.WritePushDependencies(path, Config(), GrovsAndroidPushMode.Standalone));
+
+            Assert.IsTrue(GrovsAndroidLibGenerator.WritePushDependencies(path, Config(), GrovsAndroidPushMode.FirebaseUnity));
+            Assert.IsFalse(File.Exists(path));
+            Assert.IsFalse(GrovsAndroidLibGenerator.WritePushDependencies(path, Config(), GrovsAndroidPushMode.FirebaseUnity));
+
+            _settings.pushEnabled = false;
+            GrovsAndroidLibGenerator.WritePushDependencies(path, Config(), GrovsAndroidPushMode.Standalone);
+            Assert.IsFalse(File.Exists(path));
+        }
+
+        [Test]
         public void PushMode_Auto_ResolvesByFirebaseUnityPresence()
         {
             Assert.AreEqual(GrovsAndroidPushMode.FirebaseUnity,
