@@ -13,7 +13,7 @@ using UnityEngine;
 public class GrovsDevOverrides : IPostprocessBuildWithReport
 {
     const string PodPathVariable = "GROVS_IOS_POD_PATH";
-    static readonly Regex GrovsPodLine = new Regex(@"^(\s*)pod 'Grovs'(,.*)?$", RegexOptions.Multiline);
+    static readonly Regex GrovsPodLine = new Regex(@"^([ \t]*)pod 'Grovs'(,[^\r\n]*)?(\r?)$", RegexOptions.Multiline);
 
     public int callbackOrder => 45;
 
@@ -30,7 +30,8 @@ public class GrovsDevOverrides : IPostprocessBuildWithReport
         if (!GrovsPodLine.IsMatch(text)) throw new BuildFailedException("The Podfile has no pod 'Grovs' line.");
 
         var fullPath = Path.GetFullPath(podPath).Replace("'", "\\'");
-        File.WriteAllText(podfile, GrovsPodLine.Replace(text, "$1pod 'Grovs', :path => '" + fullPath + "'"));
+        File.WriteAllText(podfile, GrovsPodLine.Replace(text,
+            match => match.Groups[1].Value + "pod 'Grovs', :path => '" + fullPath + "'" + match.Groups[3].Value));
         Debug.Log("[GrovsDevOverrides] pod 'Grovs' now uses " + fullPath);
     }
 }

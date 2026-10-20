@@ -23,12 +23,14 @@ namespace GrovsSDK.Internal
         static readonly ShouldShowCallback ShouldShowCallbackDelegate = OnNativeShouldShow;
 
         static Action<string, string> _onMessage;
+        static Func<string, bool> _shouldShowInApp;
 
         public bool IsSupported => true;
 
         public void Start(Action<string, string> onMessage, Func<string, bool> shouldShowInApp)
         {
             _onMessage = onMessage;
+            _shouldShowInApp = shouldShowInApp;
             GrovsUnity_RegisterCallbacks(MessageCallbackDelegate, ShouldShowCallbackDelegate);
         }
 
@@ -52,7 +54,8 @@ namespace GrovsSDK.Internal
         {
             try
             {
-                return Grovs.InvokeShouldShow(Marshal.PtrToStringUTF8(campaignId));
+                var shouldShow = _shouldShowInApp;
+                return shouldShow == null || shouldShow(Marshal.PtrToStringUTF8(campaignId));
             }
             catch (Exception e)
             {
