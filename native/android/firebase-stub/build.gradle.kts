@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.google.firebase.messaging.cpp.stub"
+    namespace = "io.grovs.unity.firebasestub"
     compileSdk = 34
 
     defaultConfig {
