@@ -3,6 +3,7 @@
   "rootNamespace": "GrovsSDK.Tests",
   "references": [
     "GrovsSDK.Runtime",
+    "GrovsSDK.Editor",
     "UnityEngine.TestRunner",
     "UnityEditor.TestRunner"
   ],
