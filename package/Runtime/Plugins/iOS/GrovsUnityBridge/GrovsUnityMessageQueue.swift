@@ -34,13 +34,21 @@ final class GrovsUnityMessageQueue {
         target?(type, json)
     }
 
+    /// The sink is published only once the buffer is empty, so messages posted while
+    /// flushing queue up behind older ones and order is kept.
     func setReady(_ sink: @escaping (String, String) -> Void) {
-        let batch: [Message] = lock.sync {
-            self.sink = sink
-            let drained = pending
-            pending.removeAll()
-            return drained
+        while true {
+            let batch: [Message] = lock.sync {
+                if pending.isEmpty {
+                    self.sink = sink
+                    return []
+                }
+                let drained = pending
+                pending.removeAll()
+                return drained
+            }
+            if batch.isEmpty { return }
+            batch.forEach { sink($0.type, $0.json) }
         }
-        batch.forEach { sink($0.type, $0.json) }
     }
 }

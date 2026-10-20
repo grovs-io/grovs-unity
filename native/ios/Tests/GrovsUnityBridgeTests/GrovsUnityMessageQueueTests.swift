@@ -69,4 +69,31 @@ final class GrovsUnityMessageQueueTests: XCTestCase {
         q.post("deeplink", "x")
         XCTAssertEqual(r.messages.map { "\($0.0):\($0.1)" }, ["deeplink:x"])
     }
+
+    func testPostDuringFlushKeepsOrder() {
+        let q = GrovsUnityMessageQueue()
+        q.post("result", "1")
+        q.post("result", "2")
+        let started = DispatchSemaphore(value: 0)
+        let gate = DispatchSemaphore(value: 0)
+        let done = expectation(description: "flushed")
+        let lock = NSLock()
+        var received: [String] = []
+        DispatchQueue.global().async {
+            q.setReady { _, json in
+                lock.lock(); received.append(json); lock.unlock()
+                if json == "1" {
+                    started.signal()
+                    gate.wait()
+                }
+            }
+            done.fulfill()
+        }
+        started.wait()
+        q.post("result", "3")
+        gate.signal()
+        wait(for: [done], timeout: 5)
+        q.post("result", "4")
+        XCTAssertEqual(received, ["1", "2", "3", "4"])
+    }
 }
