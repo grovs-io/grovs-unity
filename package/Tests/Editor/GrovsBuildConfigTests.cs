@@ -35,19 +35,21 @@ namespace GrovsSDK.Tests
         }
 
         [Test]
-        public void Validate_EmptyKeyAndScheme_Errors()
+        public void Validate_EmptyScheme_Errors_EmptyKey_Warns()
         {
             _settings.apiKey = " ";
             _settings.uriScheme = "";
-            CollectionAssert.AreEqual(new[]
-            {
-                "Grovs: API key is empty (Project Settings > Grovs).",
-                "Grovs: URI scheme is empty. iOS authentication fails without it."
-            }, GrovsBuildConfig.Resolve(_settings, false).Validate());
+            var config = GrovsBuildConfig.Resolve(_settings, false);
+            CollectionAssert.AreEqual(new[] { "Grovs: URI scheme is empty. iOS authentication fails without it." },
+                config.Validate());
+            CollectionAssert.AreEqual(new[] { "Grovs: API key is empty (Project Settings > Grovs)." },
+                config.Warnings());
 
             _settings.apiKey = "key";
             _settings.uriScheme = "scheme";
-            CollectionAssert.IsEmpty(GrovsBuildConfig.Resolve(_settings, false).Validate());
+            config = GrovsBuildConfig.Resolve(_settings, false);
+            CollectionAssert.IsEmpty(config.Validate());
+            CollectionAssert.IsEmpty(config.Warnings());
         }
 
         [Test]

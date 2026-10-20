@@ -46,9 +46,15 @@ namespace GrovsSDK.Editor
         public List<string> Validate()
         {
             var errors = new List<string>();
-            if (ApiKey.Length == 0) errors.Add("Grovs: API key is empty (Project Settings > Grovs).");
             if (UriScheme.Length == 0) errors.Add("Grovs: URI scheme is empty. iOS authentication fails without it.");
             return errors;
+        }
+
+        public List<string> Warnings()
+        {
+            var warnings = new List<string>();
+            if (ApiKey.Length == 0) warnings.Add("Grovs: API key is empty (Project Settings > Grovs).");
+            return warnings;
         }
 
         static string LogLevelNameOf(GrovsLogLevel level)

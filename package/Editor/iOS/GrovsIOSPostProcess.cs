@@ -21,6 +21,7 @@ namespace GrovsSDK.Editor.iOS
 
             var developmentBuild = (report.summary.options & BuildOptions.Development) != 0;
             var config = GrovsBuildConfig.Resolve(GrovsSettings.LoadOrCreate(), developmentBuild);
+            foreach (var warning in config.Warnings()) Debug.LogWarning(warning);
             var errors = config.Validate();
             if (errors.Count > 0) throw new BuildFailedException(string.Join("\n", errors));
 
