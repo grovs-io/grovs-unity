@@ -178,6 +178,44 @@ namespace GrovsSDK.Tests
         }
 
         [Test]
+        public void Drain_RetryFromCallback_StaysQueuedForNextDrain()
+        {
+            Grovs.ResetForTests(new GrovsStub());
+            var attempts = 0;
+            void Attempt() => Grovs.GenerateLink(new GenerateLinkOptions(), (link, error) =>
+            {
+                attempts++;
+                if (error != null) Attempt();
+            });
+
+            Attempt();
+            Grovs.Router.Drain();
+            Assert.AreEqual(1, attempts);
+
+            Grovs.Router.Drain();
+            Assert.AreEqual(2, attempts);
+        }
+
+        [Test]
+        public void NewRequest_FromOtherThreads_GivesUniqueIds()
+        {
+            var ids = new System.Collections.Concurrent.ConcurrentBag<int>();
+            var threads = new List<System.Threading.Thread>();
+            for (var t = 0; t < 4; t++)
+            {
+                var thread = new System.Threading.Thread(() =>
+                {
+                    for (var i = 0; i < 250; i++) ids.Add(Grovs.Router.NewRequest((v, e) => { }));
+                });
+                threads.Add(thread);
+                thread.Start();
+            }
+            foreach (var thread in threads) thread.Join();
+
+            Assert.AreEqual(1000, new HashSet<int>(ids).Count);
+        }
+
+        [Test]
         public void ShouldShow_NullDelegate_ReturnsTrue()
         {
             Grovs.ShouldShowInAppMessage = null;

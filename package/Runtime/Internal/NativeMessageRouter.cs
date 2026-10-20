@@ -12,6 +12,7 @@ namespace GrovsSDK.Internal
     {
         readonly ConcurrentQueue<(string Type, string Json)> _queue = new ConcurrentQueue<(string, string)>();
         readonly Dictionary<int, Action<object, GrovsError>> _requests = new Dictionary<int, Action<object, GrovsError>>();
+        readonly object _requestsLock = new object();
         int _lastRequestId;
 
         /// <summary>Thread-safe. Native code may call this while holding its own locks, so it only enqueues.</summary>
@@ -20,23 +21,28 @@ namespace GrovsSDK.Internal
             _queue.Enqueue((type, json));
         }
 
-        /// <summary>Main thread only.</summary>
         public int NewRequest(Action<object, GrovsError> onDone)
         {
-            var id = ++_lastRequestId;
-            _requests[id] = onDone;
-            return id;
+            lock (_requestsLock)
+            {
+                var id = ++_lastRequestId;
+                _requests[id] = onDone;
+                return id;
+            }
         }
 
-        /// <summary>Main thread only.</summary>
         public void Complete(int requestId, object value, GrovsError error)
         {
-            if (!_requests.TryGetValue(requestId, out var onDone))
+            Action<object, GrovsError> onDone;
+            lock (_requestsLock)
+            {
+                if (_requests.TryGetValue(requestId, out onDone)) _requests.Remove(requestId);
+            }
+            if (onDone == null)
             {
                 Debug.LogWarning("[Grovs] Result for unknown request " + requestId + ".");
                 return;
             }
-            _requests.Remove(requestId);
             try
             {
                 onDone(value, error);
@@ -47,10 +53,14 @@ namespace GrovsSDK.Internal
             }
         }
 
-        /// <summary>Main thread only.</summary>
+        /// <summary>
+        /// Main thread only. Handles only the messages queued before the call, so a callback
+        /// that starts a new request cannot keep this loop going within one frame.
+        /// </summary>
         public void Drain()
         {
-            while (_queue.TryDequeue(out var message))
+            var count = _queue.Count;
+            for (var i = 0; i < count && _queue.TryDequeue(out var message); i++)
             {
                 try
                 {
