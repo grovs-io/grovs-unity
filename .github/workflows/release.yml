@@ -19,9 +19,15 @@ jobs:
       - name: Look up CocoaPods and Maven Central
         run: |
           pod repo add-cdn trunk https://cdn.cocoapods.org/ > /dev/null 2>&1 || true
+          pom_url="https://repo1.maven.org/maven2/io/grovs/Grovs/$NATIVE_VERSION/Grovs-$NATIVE_VERSION.pom"
           if ! pod spec cat Grovs --version="$NATIVE_VERSION" > /dev/null 2>&1 ||
-             ! curl -sfI "https://repo1.maven.org/maven2/io/grovs/Grovs/$NATIVE_VERSION/Grovs-$NATIVE_VERSION.pom" > /dev/null; then
-            echo "::error::native 3.1.0 not published"
+             ! curl -sf "$pom_url" -o grovs.pom; then
+            echo "::error::native $NATIVE_VERSION not published"
+            exit 1
+          fi
+          # The bridge AAR ships no pom, so games get Retrofit, OkHttp and the rest only from this one.
+          if ! grep -q "<dependency>" grovs.pom; then
+            echo "::error::io.grovs:Grovs:$NATIVE_VERSION pom on Maven Central lists no dependencies. Android games would crash at startup. Republish it with its dependencies."
             exit 1
           fi
 

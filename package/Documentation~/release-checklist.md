@@ -2,6 +2,11 @@
 
 Run on a real iOS device and a real Android device for every release. Write the device, OS version and build next to each result.
 
+## Publishing
+
+- [ ] The OpenUPM package entry uses `gitTagPrefix: upm/`, so it builds only from `upm/vX.Y.Z` tags. Plain `vX.Y.Z` tags have no AARs and keep the `package/` folder layout, so add `gitTagIgnore` for them if OpenUPM picks them up.
+- [ ] The OpenUPM page lists the new `upm/vX.Y.Z` version, and that version has both AARs in `Runtime/Plugins/Android`.
+
 ## iOS
 
 - [ ] Cold start from a universal link
