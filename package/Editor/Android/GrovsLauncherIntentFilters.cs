@@ -9,12 +9,16 @@ namespace GrovsSDK.Editor.Android
     {
         const string ViewAction = "android.intent.action.VIEW";
 
+        // Unity can reuse the manifest from the last build, so filters carry this marker and are replaced each build.
+        const string Marker = "Added by Grovs";
+
         public static void Apply(XmlDocument manifest, GrovsBuildConfig c)
         {
             var activity = FindLauncher(manifest);
             if (activity == null)
                 throw new InvalidOperationException("Grovs: no MAIN/LAUNCHER activity found in unityLibrary manifest.");
 
+            foreach (var filter in Filters(activity).Where(IsGrovsFilter)) activity.RemoveChild(filter);
             if (c.UriScheme.Length > 0) AddFilter(activity, c.UriScheme, null);
             foreach (var domain in c.LinkDomains) AddFilter(activity, "https", domain);
         }
@@ -41,6 +45,7 @@ namespace GrovsSDK.Editor.Android
             var doc = activity.OwnerDocument;
             var filter = doc.CreateElement("intent-filter");
             if (host != null) GrovsAndroidXml.SetAndroid(filter, "autoVerify", "true");
+            filter.AppendChild(doc.CreateComment(" " + Marker + " "));
             filter.AppendChild(GrovsAndroidXml.Element(doc, "action", "name", ViewAction));
             filter.AppendChild(GrovsAndroidXml.Element(doc, "category", "name", "android.intent.category.DEFAULT"));
             filter.AppendChild(GrovsAndroidXml.Element(doc, "category", "name", "android.intent.category.BROWSABLE"));
@@ -50,6 +55,9 @@ namespace GrovsSDK.Editor.Android
 
             activity.InsertAfter(filter, filters.Last());
         }
+
+        static bool IsGrovsFilter(XmlElement filter) =>
+            filter.ChildNodes.OfType<XmlComment>().Any(c => c.Value.Trim() == Marker);
 
         static bool HasData(XmlElement filter, string scheme, string host) =>
             filter.ChildNodes.OfType<XmlElement>().Any(d =>

@@ -194,6 +194,29 @@ namespace GrovsSDK.Tests
         }
 
         [Test]
+        public void IntentFilters_ReplacesFiltersFromEarlierBuild_KeepsOwnFilters()
+        {
+            var doc = LoadInput();
+            var launcher = (XmlElement)doc.SelectSingleNode("/manifest/application/activity[2]");
+            var own = doc.CreateElement("intent-filter");
+            own.AppendChild(GrovsAndroidXml.Element(doc, "action", "name", "android.intent.action.VIEW"));
+            own.AppendChild(GrovsAndroidXml.Element(doc, "data", "scheme", "mygame"));
+            launcher.AppendChild(own);
+            GrovsLauncherIntentFilters.Apply(doc, Config());
+
+            var reused = new XmlDocument();
+            reused.LoadXml(GrovsAndroidXml.ToText(doc));
+            _settings.uriScheme = "grovsbeta";
+            _settings.linkDomains = new string[0];
+            GrovsLauncherIntentFilters.Apply(reused, Config());
+
+            var schemes = reused.SelectNodes("//intent-filter/data").Cast<XmlElement>()
+                .Select(d => d.GetAttribute("scheme", AndroidNs)).ToArray();
+            CollectionAssert.AreEquivalent(new[] { "mygame", "grovsbeta" }, schemes);
+            Assert.AreEqual(3, reused.SelectNodes("//intent-filter").Count);
+        }
+
+        [Test]
         public void IntentFilters_NoLauncher_Throws()
         {
             var doc = new XmlDocument();
