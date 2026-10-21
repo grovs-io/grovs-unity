@@ -1,0 +1,16 @@
+{
+  "name": "GrovsSDK.Demo",
+  "rootNamespace": "GrovsSDK.Samples",
+  "references": [
+    "GrovsSDK.Runtime"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

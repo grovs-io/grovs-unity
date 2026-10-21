@@ -1,0 +1,186 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  NATIVE_VERSION: 3.1.0
+  UNITY_VERSION: 2022.3.62f3
+
+jobs:
+  check-native:
+    name: Native SDKs are published
+    runs-on: macos-14
+    steps:
+      - name: Look up CocoaPods and Maven Central
+        run: |
+          pod repo add-cdn trunk https://cdn.cocoapods.org/ > /dev/null 2>&1 || true
+          if ! pod spec cat Grovs --version="$NATIVE_VERSION" > /dev/null 2>&1 ||
+             ! curl -sfI "https://repo1.maven.org/maven2/io/grovs/Grovs/$NATIVE_VERSION/Grovs-$NATIVE_VERSION.pom" > /dev/null; then
+            echo "::error::native 3.1.0 not published"
+            exit 1
+          fi
+
+  aars:
+    name: Build the AARs
+    needs: check-native
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-java@v4.7.1
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Build
+        run: scripts/build-android-bridge.sh
+
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: android-aars
+          path: package/Runtime/Plugins/Android/*.aar
+          if-no-files-found: error
+
+  upm:
+    name: Publish the upm branch
+    needs: aars
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/download-artifact@v4.3.0
+        with:
+          name: android-aars
+          path: package/Runtime/Plugins/Android
+
+      - name: Check the tag matches package.json
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          package_version=$(python3 -c 'import json; print(json.load(open("package/package.json"))["version"])')
+          if [ "$version" != "$package_version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $package_version"
+            exit 1
+          fi
+
+      # Fixed GUIDs, so projects keep their references from one release to the next.
+      - name: Copy the package and add the AAR meta files
+        run: |
+          upm="$RUNNER_TEMP/upm"
+          cp -R package "$upm"
+          find "$upm" -name .DS_Store -delete
+          write_meta() {
+            cat > "$upm/Runtime/Plugins/Android/$1.meta" <<EOF
+          fileFormatVersion: 2
+          guid: $2
+          PluginImporter:
+            externalObjects: {}
+            serializedVersion: 2
+            iconMap: {}
+            executionOrder: {}
+            defineConstraints: []
+            isPreloaded: 0
+            isOverridable: 1
+            isExplicitlyReferenced: 0
+            validateReferences: 1
+            platformData:
+            - first:
+                Android: Android
+              second:
+                enabled: 1
+                settings: {}
+            - first:
+                Any:
+              second:
+                enabled: 0
+                settings: {}
+            - first:
+                Editor: Editor
+              second:
+                enabled: 0
+                settings:
+                  DefaultValueInitialized: true
+            userData:
+            assetBundleName:
+            assetBundleVariant:
+          EOF
+          }
+          write_meta grovs-unity-bridge.aar 7e6a00d28302e48068100ac4b6209e2c
+          write_meta grovs-unity-firebase.aar 29b583a912bf442c4b9a4230d334cf66
+          ls -l "$upm/Runtime/Plugins/Android"
+
+      - name: Force-push the upm branch and tag it
+        working-directory: ${{ runner.temp }}/upm
+        run: |
+          git init -b upm
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Release $GITHUB_REF_NAME"
+          git tag "upm/$GITHUB_REF_NAME"
+          git remote add origin "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY.git"
+          git push --force origin upm
+          git push origin "upm/$GITHUB_REF_NAME"
+
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: upm-package
+          path: ${{ runner.temp }}/upm
+
+  unitypackage:
+    name: Export the .unitypackage and create the release
+    needs: upm
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/download-artifact@v4.3.0
+        with:
+          name: upm-package
+          path: upm
+
+      # A throwaway project, because -exportPackage only exports from Assets.
+      - name: Make the export project
+        run: |
+          mkdir -p export/Assets/Editor export/ProjectSettings export/Packages
+          cp -R upm export/Assets/GrovsSDK
+          rm -rf export/Assets/GrovsSDK/Tests export/Assets/GrovsSDK/Tests.meta
+          echo "m_EditorVersion: $UNITY_VERSION" > export/ProjectSettings/ProjectVersion.txt
+          echo '{ "dependencies": {} }' > export/Packages/manifest.json
+          cat > export/Assets/Editor/GrovsExport.cs <<'EOF'
+          using UnityEditor;
+
+          public static class GrovsExport
+          {
+              public static void Export()
+              {
+                  AssetDatabase.ExportPackage("Assets/GrovsSDK", "../Grovs.unitypackage",
+                      ExportPackageOptions.Recurse);
+              }
+          }
+          EOF
+
+      - uses: game-ci/unity-builder@v4.3.0
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: export
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: StandaloneLinux64
+          buildMethod: GrovsExport.Export
+
+      - name: Name the package
+        run: |
+          test -f Grovs.unitypackage
+          mv Grovs.unitypackage "Grovs-${GITHUB_REF_NAME#v}.unitypackage"
+
+      - uses: softprops/action-gh-release@v2.2.2
+        with:
+          files: Grovs-*.unitypackage

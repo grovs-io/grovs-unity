@@ -3,5 +3,12 @@
   "version": "1.0.0",
   "displayName": "Grovs",
   "description": "Grovs deep linking, attribution and in-app messages for Unity.",
-  "unity": "2022.3"
+  "unity": "2022.3",
+  "samples": [
+    {
+      "displayName": "Demo",
+      "description": "A scene with one button per Grovs feature.",
+      "path": "Samples~/Demo"
+    }
+  ]
 }

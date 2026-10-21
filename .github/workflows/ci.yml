@@ -1,0 +1,266 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# The native Grovs 3.1 SDKs are private until they ship, so CI checks them out next to this repo.
+env:
+  GROVS_ANDROID_REPO: grovs-io/grovs-Android
+  GROVS_IOS_REPO: grovs-io/grovs-iOS
+  UNITY_2022: 2022.3.62f3
+
+jobs:
+  android-bridge:
+    name: Android bridge tests and AARs
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          path: grovs-unity
+
+      - uses: actions/checkout@v4.2.2
+        with:
+          repository: ${{ env.GROVS_ANDROID_REPO }}
+          token: ${{ secrets.GROVS_ANDROID_REPO_TOKEN }}
+          path: grovs-Android
+
+      - uses: actions/setup-java@v4.7.1
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Use a local Maven repository inside the workspace
+        run: |
+          mkdir -p ~/.gradle "$GITHUB_WORKSPACE/m2"
+          echo "systemProp.maven.repo.local=$GITHUB_WORKSPACE/m2" >> ~/.gradle/gradle.properties
+
+      - name: Publish the native SDK to the local Maven repository
+        working-directory: grovs-Android/Grovs
+        run: ./gradlew :Grovs:publishReleasePublicationToMavenLocal -PRELEASE_SIGNING_ENABLED=false
+
+      - name: Bridge unit tests
+        working-directory: grovs-unity/native/android
+        run: ./gradlew :bridge:testDebugUnitTest :firebase:testDebugUnitTest
+
+      - name: Build the AARs
+        run: grovs-unity/scripts/build-android-bridge.sh
+
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: android-aars
+          path: grovs-unity/package/Runtime/Plugins/Android/*.aar
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: native-maven
+          path: m2/io/grovs
+          if-no-files-found: error
+
+  ios-bridge:
+    name: iOS bridge tests
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          path: grovs-unity
+
+      - uses: actions/checkout@v4.2.2
+        with:
+          repository: ${{ env.GROVS_IOS_REPO }}
+          token: ${{ secrets.GROVS_IOS_REPO_TOKEN }}
+          path: grovs-iOS
+
+      - name: xcodebuild test
+        working-directory: grovs-unity
+        run: |
+          udid=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          print(next(d["udid"] for runtime, items in devices.items() if "iOS" in runtime
+                     for d in items if d["name"].startswith("iPhone")))')
+          xcodebuild test -scheme GrovsUnityBridge-Package -destination "platform=iOS Simulator,id=$udid"
+
+  unity-tests:
+    name: Unity EditMode tests (${{ matrix.unityVersion }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        unityVersion: [2022.3.62f3, 6000.0.58f2]
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          path: grovs-unity
+
+      - uses: actions/cache@v4.2.3
+        with:
+          path: grovs-unity/sample/Library
+          key: library-tests-${{ matrix.unityVersion }}-${{ hashFiles('grovs-unity/sample/Packages/packages-lock.json') }}
+          restore-keys: library-tests-${{ matrix.unityVersion }}-
+
+      - uses: game-ci/unity-test-runner@v4.3.1
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: grovs-unity/sample
+          unityVersion: ${{ matrix.unityVersion }}
+          testMode: editmode
+          artifactsPath: test-results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v4.6.2
+        if: always()
+        with:
+          name: editmode-results-${{ matrix.unityVersion }}
+          path: test-results
+
+  unity-android:
+    name: Unity Android ${{ matrix.backend }} (${{ matrix.unityVersion }})
+    needs: android-bridge
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        unityVersion: [2022.3.62f3, 6000.0.58f2]
+        backend: [IL2CPP, Mono]
+        include:
+          - backend: IL2CPP
+            minify: "true"
+          - backend: Mono
+            minify: "false"
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          path: grovs-unity
+
+      - uses: actions/download-artifact@v4.3.0
+        with:
+          name: android-aars
+          path: grovs-unity/package/Runtime/Plugins/Android
+
+      - uses: actions/download-artifact@v4.3.0
+        with:
+          name: native-maven
+          path: m2/io/grovs
+
+      # The builder runs in a container that mounts the workspace at /github/workspace.
+      - name: Point the sample at the local Maven repository
+        run: |
+          sed -i 's#<repository>file://[^<]*</repository>#<repository>file:///github/workspace/m2</repository>#' \
+            grovs-unity/sample/Assets/Editor/GrovsDevDependencies.xml
+          grep -q 'file:///github/workspace/m2' grovs-unity/sample/Assets/Editor/GrovsDevDependencies.xml
+
+      - uses: actions/cache@v4.2.3
+        with:
+          path: grovs-unity/sample/Library
+          key: library-android-${{ matrix.unityVersion }}-${{ matrix.backend }}-${{ hashFiles('grovs-unity/sample/Packages/packages-lock.json') }}
+          restore-keys: library-android-${{ matrix.unityVersion }}-${{ matrix.backend }}-
+
+      - uses: game-ci/unity-builder@v4.3.0
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: grovs-unity/sample
+          unityVersion: ${{ matrix.unityVersion }}
+          targetPlatform: Android
+          buildMethod: GrovsSampleBuild.BuildAndroid
+          customParameters: >-
+            -GROVS_ANDROID_BACKEND ${{ matrix.backend }}
+            -GROVS_ANDROID_MINIFY ${{ matrix.minify }}
+            -GROVS_TEST_KEY ${{ secrets.GROVS_TEST_KEY }}
+            -GROVS_PROD_KEY ${{ secrets.GROVS_PROD_KEY }}
+            -GROVS_URI_SCHEME ${{ secrets.GROVS_URI_SCHEME }}
+            -GROVS_LINK_DOMAINS ${{ secrets.GROVS_LINK_DOMAINS }}
+
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: android-${{ matrix.unityVersion }}-${{ matrix.backend }}
+          path: grovs-unity/build/android/sample.apk
+          if-no-files-found: error
+
+  unity-ios-export:
+    name: Unity iOS export (${{ matrix.unityVersion }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        unityVersion: [2022.3.62f3, 6000.0.58f2]
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          path: grovs-unity
+
+      - uses: actions/cache@v4.2.3
+        with:
+          path: grovs-unity/sample/Library
+          key: library-ios-${{ matrix.unityVersion }}-${{ hashFiles('grovs-unity/sample/Packages/packages-lock.json') }}
+          restore-keys: library-ios-${{ matrix.unityVersion }}-
+
+      - uses: game-ci/unity-builder@v4.3.0
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: grovs-unity/sample
+          unityVersion: ${{ matrix.unityVersion }}
+          targetPlatform: iOS
+          buildMethod: GrovsSampleBuild.BuildIOSSimulator
+          customParameters: >-
+            -GROVS_TEST_KEY ${{ secrets.GROVS_TEST_KEY }}
+            -GROVS_PROD_KEY ${{ secrets.GROVS_PROD_KEY }}
+            -GROVS_URI_SCHEME ${{ secrets.GROVS_URI_SCHEME }}
+            -GROVS_LINK_DOMAINS ${{ secrets.GROVS_LINK_DOMAINS }}
+
+      - name: Pack the Xcode project
+        run: tar -czf ios-export.tgz -C grovs-unity/build ios
+
+      - uses: actions/upload-artifact@v4.6.2
+        with:
+          name: ios-export-${{ matrix.unityVersion }}
+          path: ios-export.tgz
+          if-no-files-found: error
+
+  unity-ios-xcodebuild:
+    name: Xcode simulator build (${{ matrix.unityVersion }})
+    needs: unity-ios-export
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        unityVersion: [2022.3.62f3, 6000.0.58f2]
+    steps:
+      - uses: actions/checkout@v4.2.2
+        with:
+          repository: ${{ env.GROVS_IOS_REPO }}
+          token: ${{ secrets.GROVS_IOS_REPO_TOKEN }}
+          path: grovs-iOS
+
+      - uses: actions/download-artifact@v4.3.0
+        with:
+          name: ios-export-${{ matrix.unityVersion }}
+
+      - name: Unpack the Xcode project
+        run: mkdir -p build && tar -xzf ios-export.tgz -C build
+
+      - name: Install pods from the local native SDK
+        working-directory: build/ios
+        run: |
+          test -f Podfile || { echo "The export has no Podfile."; exit 1; }
+          sed -i '' -E "s#^([[:space:]]*)pod 'Grovs'.*#\1pod 'Grovs', :path => '$GITHUB_WORKSPACE/grovs-iOS'#" Podfile
+          grep -q ":path => '$GITHUB_WORKSPACE/grovs-iOS'" Podfile
+          pod install
+
+      - name: xcodebuild for the simulator
+        working-directory: build/ios
+        run: |
+          xcodebuild -workspace Unity-iPhone.xcworkspace -scheme Unity-iPhone -sdk iphonesimulator \
+            -configuration Debug CODE_SIGNING_ALLOWED=NO build
