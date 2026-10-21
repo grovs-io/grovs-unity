@@ -192,6 +192,15 @@ class GrovsUnityBridgeTest {
     }
 
     @Test
+    fun errorCodeMapping_everyNativeCodeMapsToACanonicalCode() {
+        val canonical = setOf(
+            "link_generation_failed", "sdk_not_initialized", "notifications_error",
+            "link_details_failed", "event_dispatch_failed", "unknown"
+        )
+        GrovsErrorCode.values().forEach { assertTrue(GrovsUnityBridge.errorCode(it) in canonical) }
+    }
+
+    @Test
     fun deeplink_postsMessage() {
         GrovsUnityBridge.start(app, config())
         fake.deeplinkCallback!!("https://x.sqd.link/a", mapOf("level" to 3.0), mapOf("campaign" to "c"))

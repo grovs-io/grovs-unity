@@ -251,7 +251,7 @@ object GrovsUnityBridge {
         GrovsErrorCode.NOTIFICATIONS_ERROR -> "notifications_error"
         GrovsErrorCode.LINK_DETAILS_ERROR -> "link_details_failed"
         GrovsErrorCode.EVENT_DISPATCH_ERROR -> "event_dispatch_failed"
-        null -> "unknown"
+        else -> "unknown"
     }
 
     private val inAppListener = object : GrovsInAppListener {
