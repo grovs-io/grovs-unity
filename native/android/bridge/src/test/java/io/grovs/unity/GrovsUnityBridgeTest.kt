@@ -223,7 +223,10 @@ class GrovsUnityBridgeTest {
         assertEquals(4, events[3].getInt("value"))
         assertEquals("ok", events[3].getString("comment"))
         assertEquals("no view", events[4].getString("message"))
-        assertTrue(listener.of("error").isEmpty())
+        val error = listener.of("error").single()
+        assertEquals("in_app_display_failed", error.getString("code"))
+        assertEquals("no view", error.getString("message"))
+        assertEquals("error", listener.messages.last().first)
     }
 
     @Test

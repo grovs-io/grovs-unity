@@ -277,8 +277,10 @@ object GrovsUnityBridge {
         override fun onInAppMessageAnswered(campaignId: String, value: Any, comment: String?) =
             postInApp("answered", campaignId, "value" to value, "comment" to comment)
 
-        override fun onInAppMessageFailed(campaignId: String, message: String) =
+        override fun onInAppMessageFailed(campaignId: String, message: String) {
             postInApp("failed", campaignId, "message" to message)
+            postError("in_app_display_failed", message)
+        }
     }
 
     private fun postInApp(type: String, campaignId: String, vararg fields: Pair<String, Any?>) {
