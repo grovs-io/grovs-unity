@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using GrovsSDK.Editor;
 using UnityEditor;
+using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
 
@@ -25,8 +26,46 @@ public static class GrovsSampleBuild
         Run(() => WithAndroidPlayerOverrides(() =>
         {
             ResolveAndroidDependencies();
-            Build(BuildTarget.Android, Path.Combine(RepoRoot, "build", "android", "sample.apk"));
+            WithUnity6MainTemplate(() =>
+                Build(BuildTarget.Android, Path.Combine(RepoRoot, "build", "android", "sample.apk")));
         }));
+    }
+
+    const string MainTemplatePath = "Assets/Plugins/Android/mainTemplate.gradle";
+    const string DefaultConfigToken = "**DEFAULT_CONFIG_SETUP**";
+
+    // Unity 6 needs this token in defaultConfig, and Unity 2022.3 does not know it, so it is added for the build only.
+    static void WithUnity6MainTemplate(Action build)
+    {
+#if UNITY_6000_0_OR_NEWER
+        var original = File.ReadAllText(MainTemplatePath);
+        if (original.Contains(DefaultConfigToken))
+        {
+            build();
+            return;
+        }
+        File.WriteAllText(MainTemplatePath, WithDefaultConfigToken(original));
+        try
+        {
+            build();
+        }
+        finally
+        {
+            File.WriteAllText(MainTemplatePath, original);
+        }
+#else
+        build();
+#endif
+    }
+
+    static string WithDefaultConfigToken(string template)
+    {
+        var lines = template.Split('\n').ToList();
+        var index = lines.FindIndex(l => l.Contains("consumerProguardFiles"));
+        if (index < 0) throw new InvalidOperationException("mainTemplate.gradle has no consumerProguardFiles line.");
+        var indent = lines[index].Substring(0, lines[index].Length - lines[index].TrimStart().Length);
+        lines.Insert(index + 1, indent + DefaultConfigToken);
+        return string.Join("\n", lines);
     }
 
     public static void BuildIOS()
@@ -103,7 +142,7 @@ public static class GrovsSampleBuild
 
     static void WithAndroidPlayerOverrides(Action build)
     {
-        var backend = PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android);
+        var backend = PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android);
         var architectures = PlayerSettings.Android.targetArchitectures;
         var minify = PlayerSettings.Android.minifyRelease;
         try
@@ -112,7 +151,7 @@ public static class GrovsSampleBuild
             if (requestedBackend != null)
             {
                 var mono = requestedBackend.Equals("Mono", StringComparison.OrdinalIgnoreCase);
-                PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android,
+                PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android,
                     mono ? ScriptingImplementation.Mono2x : ScriptingImplementation.IL2CPP);
                 // Mono only builds 32-bit ARM.
                 PlayerSettings.Android.targetArchitectures = mono ? AndroidArchitecture.ARMv7 : AndroidArchitecture.ARM64;
@@ -120,13 +159,13 @@ public static class GrovsSampleBuild
             var requestedMinify = Env("GROVS_ANDROID_MINIFY");
             if (requestedMinify != null) PlayerSettings.Android.minifyRelease = requestedMinify == "1" ||
                 requestedMinify.Equals("true", StringComparison.OrdinalIgnoreCase);
-            Debug.Log("[GrovsSampleBuild] Android " + PlayerSettings.GetScriptingBackend(BuildTargetGroup.Android) +
+            Debug.Log("[GrovsSampleBuild] Android " + PlayerSettings.GetScriptingBackend(NamedBuildTarget.Android) +
                       ", minify " + PlayerSettings.Android.minifyRelease);
             build();
         }
         finally
         {
-            PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, backend);
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, backend);
             PlayerSettings.Android.targetArchitectures = architectures;
             PlayerSettings.Android.minifyRelease = minify;
         }
