@@ -140,6 +140,47 @@ class GrovsUnityBridgeTest {
         assertEquals("boom", result.getJSONObject("error").getString("message"))
     }
 
+    private fun assertDisabledResult(requestId: Int) {
+        val result = listener.of("result").single()
+        assertEquals(requestId, result.getInt("requestId"))
+        assertFalse(result.getBoolean("ok"))
+        assertEquals("sdk_disabled", result.getJSONObject("error").getString("code"))
+    }
+
+    @Test
+    fun generateLink_whileDisabled_failsWithSdkDisabled() {
+        GrovsUnityBridge.start(app, config(startEnabled = false))
+        GrovsUnityBridge.generateLink(20, "{}")
+        assertDisabledResult(20)
+        assertTrue(fake.linkCalls.isEmpty())
+    }
+
+    @Test
+    fun linkDetails_whileDisabled_failsWithSdkDisabled() {
+        GrovsUnityBridge.start(app, config())
+        GrovsUnityBridge.setEnabled(false)
+        GrovsUnityBridge.linkDetails(21, "abc")
+        assertDisabledResult(21)
+        assertTrue(fake.linkDetailsCalls.isEmpty())
+    }
+
+    @Test
+    fun logInAppPurchase_whileDisabled_failsWithSdkDisabled() {
+        GrovsUnityBridge.start(app, config(startEnabled = false))
+        GrovsUnityBridge.logInAppPurchase(22, "{\"orderId\":\"o\"}")
+        assertDisabledResult(22)
+        assertTrue(fake.inAppPurchases.isEmpty())
+    }
+
+    @Test
+    fun logCustomPurchase_whileDisabled_failsWithSdkDisabled() {
+        GrovsUnityBridge.start(app, config())
+        GrovsUnityBridge.setEnabled(false)
+        GrovsUnityBridge.logCustomPurchase(23, 0, 499, "USD", "p1", -1)
+        assertDisabledResult(23)
+        assertTrue(fake.customPurchases.isEmpty())
+    }
+
     @Test
     fun errorCodeMapping() {
         assertEquals("sdk_not_initialized", GrovsUnityBridge.errorCode(GrovsErrorCode.SDK_NOT_INITIALIZED))

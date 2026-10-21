@@ -43,6 +43,7 @@ class FakeGrovsFacade : GrovsFacade {
     val linkCalls = mutableListOf<LinkCall>()
     val inAppPurchases = mutableListOf<String>()
     val customPurchases = mutableListOf<CustomPurchase>()
+    val linkDetailsCalls = mutableListOf<String>()
 
     var deeplinkCallback: ((String?, Map<String, Any?>?, Map<String, Any?>?) -> Unit)? = null
     var inApp: GrovsInAppListener? = null
@@ -108,6 +109,7 @@ class FakeGrovsFacade : GrovsFacade {
     }
 
     override fun linkDetails(path: String, cb: (details: Map<String, Any>?, error: GrovsException?) -> Unit) {
+        linkDetailsCalls.add(path)
         cb(mapOf("path" to path), null)
     }
 

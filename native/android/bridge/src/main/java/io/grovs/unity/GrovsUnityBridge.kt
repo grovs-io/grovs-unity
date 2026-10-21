@@ -300,6 +300,10 @@ object GrovsUnityBridge {
             postResult(requestId, false, null, "sdk_not_initialized", "Grovs is not configured.")
             return
         }
+        if (!synchronized(lock) { enabled }) {
+            postResult(requestId, false, null, "sdk_disabled", "Grovs is disabled.")
+            return
+        }
         try {
             block()
         } catch (e: Exception) {

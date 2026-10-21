@@ -356,7 +356,7 @@ Grovs can stay off until the player agrees.
 
 The choice is saved on the device (iOS UserDefaults key `grovs_unity_enabled`, Android SharedPreferences `grovs_unity`, key `enabled`) and used on every later launch, before Unity starts. A saved choice always wins over **Start enabled**. Read the current state with `Grovs.IsEnabled`.
 
-While disabled, `HandleUrl` returns false and async calls fail (on iOS with `SdkDisabled`; on Android with the error the native SDK reports).
+While disabled, `HandleUrl` returns false and async calls fail with `SdkDisabled`.
 
 ## Push notifications
 
