@@ -61,9 +61,11 @@ Use an absolute path: Unity resolves a relative one against its own working fold
 
 ```
 cd ../grovs-Android/Grovs
-./gradlew :Grovs:publishReleasePublicationToMavenLocal -PRELEASE_SIGNING_ENABLED=false
+./gradlew :Grovs:publishMavenPublicationToMavenLocal -x :Grovs:signMavenPublication
 ```
+
+This publishes the `maven` publication, whose pom lists the runtime dependencies. Skipping the signing task means no signing key is needed.
 
 `Assets/Editor/GrovsDevDependencies.xml` adds that repository to the build. It uses an absolute path, `file:///path/to/.m2/repository`. **Edit it to your own home folder** (`file:///Users/<you>/.m2/repository`), and do not commit that change.
 
-The same file pins `io.grovs:Grovs:3.1.0` instead of the package's `[3.1.0,3.2)` range. A local Maven repository has no `maven-metadata.xml`, so Gradle cannot match a version range against it. The locally published pom also lists no dependencies, so the file declares the native SDK's runtime dependencies by hand.
+The same file pins `io.grovs:Grovs:3.1.0` instead of the package's `[3.1.0,3.2)` range. A local Maven repository has no `maven-metadata.xml`, so Gradle cannot match a version range against it. The file also declares the native SDK's runtime dependencies by hand, so it still works with a pom published from the `release` publication, which lists none.

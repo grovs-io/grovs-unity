@@ -6,10 +6,11 @@ on:
     branches: [main]
 
 # The native Grovs 3.1 SDKs are private until they ship, so CI checks them out next to this repo.
+# The two repos are in different organizations: GROVS_ANDROID_REPO_TOKEN needs read access to the
+# Android one and GROVS_IOS_REPO_TOKEN to the iOS one. One token with access to both can fill both secrets.
 env:
   GROVS_ANDROID_REPO: grovs-io/grovs-Android
   GROVS_IOS_REPO: grovs-io/grovs-iOS
-  UNITY_2022: 2022.3.62f3
 
 jobs:
   android-bridge:
@@ -39,7 +40,8 @@ jobs:
 
       - name: Publish the native SDK to the local Maven repository
         working-directory: grovs-Android/Grovs
-        run: ./gradlew :Grovs:publishReleasePublicationToMavenLocal -PRELEASE_SIGNING_ENABLED=false
+        # The "maven" publication has a pom with the runtime dependencies. CI has no signing key.
+        run: ./gradlew :Grovs:publishMavenPublicationToMavenLocal -x :Grovs:signMavenPublication
 
       - name: Bridge unit tests
         working-directory: grovs-unity/native/android
@@ -90,7 +92,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unityVersion: [2022.3.62f3, 6000.0.58f2]
+        unityVersion: [2022.3.62f3, 6000.0.85f1]
     steps:
       - uses: actions/checkout@v4.2.2
         with:
@@ -127,7 +129,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unityVersion: [2022.3.62f3, 6000.0.58f2]
+        unityVersion: [2022.3.62f3, 6000.0.85f1]
         backend: [IL2CPP, Mono]
         include:
           - backend: IL2CPP
@@ -192,7 +194,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unityVersion: [2022.3.62f3, 6000.0.58f2]
+        unityVersion: [2022.3.62f3, 6000.0.85f1]
     steps:
       - uses: actions/checkout@v4.2.2
         with:
@@ -236,7 +238,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        unityVersion: [2022.3.62f3, 6000.0.58f2]
+        unityVersion: [2022.3.62f3, 6000.0.85f1]
     steps:
       - uses: actions/checkout@v4.2.2
         with:
