@@ -10,7 +10,8 @@ using UnityEngine;
 /// <summary>
 /// Batchmode build entry points. Each one exits with code 1 on failure.
 /// These values, when set, change the settings for that build only and are never saved:
-/// GROVS_TEST_KEY, GROVS_PROD_KEY, GROVS_URI_SCHEME, GROVS_LINK_DOMAINS (comma list),
+/// GROVS_TEST_KEY, GROVS_PROD_KEY, GROVS_URI_SCHEME, GROVS_LINK_DOMAINS (comma list), GROVS_BASE_URL,
+/// GROVS_CLIPBOARD_DOMAINS (comma list),
 /// GROVS_ANDROID_BACKEND (IL2CPP or Mono) and GROVS_ANDROID_MINIFY (true or 1).
 /// Each is read from the environment, or else from a "-NAME value" command line argument.
 /// </summary>
@@ -117,7 +118,8 @@ public static class GrovsSampleBuild
     static void WithGrovsSettingsOverrides(Action build)
     {
         var settings = GrovsSettings.LoadOrCreate();
-        var saved = (settings.apiKey, settings.uriScheme, settings.linkDomains, settings.hideFlags);
+        var saved = (settings.apiKey, settings.uriScheme, settings.linkDomains, settings.baseUrl,
+            settings.clipboardDomains, settings.hideFlags);
         // The build unloads unused assets, which would reload the settings from disk and drop the overrides.
         settings.hideFlags |= HideFlags.DontUnloadUnusedAsset;
         try
@@ -130,15 +132,22 @@ public static class GrovsSampleBuild
             var scheme = Env("GROVS_URI_SCHEME");
             if (scheme != null) settings.uriScheme = scheme;
             var domains = Env("GROVS_LINK_DOMAINS");
-            if (domains != null)
-                settings.linkDomains = domains.Split(',').Select(d => d.Trim()).Where(d => d.Length > 0).ToArray();
+            if (domains != null) settings.linkDomains = SplitList(domains);
+            var baseUrl = Env("GROVS_BASE_URL");
+            if (baseUrl != null) settings.baseUrl = baseUrl;
+            var clipboardDomains = Env("GROVS_CLIPBOARD_DOMAINS");
+            if (clipboardDomains != null) settings.clipboardDomains = SplitList(clipboardDomains);
             build();
         }
         finally
         {
-            (settings.apiKey, settings.uriScheme, settings.linkDomains, settings.hideFlags) = saved;
+            (settings.apiKey, settings.uriScheme, settings.linkDomains, settings.baseUrl,
+                settings.clipboardDomains, settings.hideFlags) = saved;
         }
     }
+
+    static string[] SplitList(string value) =>
+        value.Split(',').Select(d => d.Trim()).Where(d => d.Length > 0).ToArray();
 
     static void WithAndroidPlayerOverrides(Action build)
     {

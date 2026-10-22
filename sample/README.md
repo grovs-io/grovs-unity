@@ -36,6 +36,8 @@ The committed `Assets/Grovs/GrovsSettings.asset` holds placeholders only. Real v
 | `GROVS_PROD_KEY` | API key when the build uses the production environment (the batch builds are release builds, so with the default "Test for development builds" this is the one used) |
 | `GROVS_URI_SCHEME` | URI scheme |
 | `GROVS_LINK_DOMAINS` | Link domains, as a comma list, for example `x.sqd.link,x.test-sqd.link` |
+| `GROVS_BASE_URL` | SDK server, for a backend other than production |
+| `GROVS_CLIPBOARD_DOMAINS` | Clipboard link domains, as a comma list |
 | `GROVS_ANDROID_BACKEND` | `IL2CPP` or `Mono` (Mono builds 32-bit ARM only) |
 | `GROVS_ANDROID_MINIFY` | `true` or `1` turns on release minify |
 
