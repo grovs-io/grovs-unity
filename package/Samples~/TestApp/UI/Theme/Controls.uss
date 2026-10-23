@@ -576,7 +576,7 @@
     transition-duration: 0.2s;
 }
 
-.fold-row--expanded .chevron {
+.fold-row--expanded > .fold-row__header .chevron {
     rotate: 180deg;
 }
 

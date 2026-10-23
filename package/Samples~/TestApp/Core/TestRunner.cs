@@ -40,7 +40,10 @@ namespace GrovsTestApp
                 var ms = elapsed + " ms";
                 detail = string.IsNullOrEmpty(detail) ? ms : detail + " · " + ms;
             }
-            return _log.Add(action.Type, result.State, action.Title, detail, result.Code ?? action.Code, action);
+            var link = action.Type == LogType.Create && result.State != LogState.Error ? result.Value as string : null;
+            var entry = _log.Add(action.Type, result.State, action.Title, detail, result.Code ?? action.Code, action, link);
+            entry.ElapsedMs = elapsed;
+            return entry;
         }
     }
 }

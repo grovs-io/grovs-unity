@@ -194,6 +194,7 @@ namespace GrovsTestApp
         {
             var scroll = new ScrollView(ScrollViewMode.Vertical);
             scroll.AddToClassList("screen");
+            scroll.verticalScrollerVisibility = ScrollerVisibility.Hidden;
             scroll.contentContainer.AddToClassList("screen__content");
             return scroll;
         }

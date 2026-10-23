@@ -65,6 +65,9 @@ namespace GrovsTestApp
         public InAppActions InApp { get; }
         public IdentityActions Identity { get; }
 
+        /// <summary>The Links tab of the scene that is showing now.</summary>
+        public LinksScreen LinksScreen { get; internal set; }
+
         /// <summary>The scaffold of the scene that is showing now.</summary>
         public AppScaffold Scaffold { get; internal set; }
 
@@ -109,9 +112,15 @@ namespace GrovsTestApp
 
         public void Rerun(TestAction action) => _ = Runner.Run(action);
 
-        /// <summary>Loads what Grovs stores for a link and shows the result in the logs.</summary>
+        /// <summary>Opens the Links tab on the link and shows what Grovs stores for it in the logs.</summary>
         public async void InspectLink(string link)
         {
+            if (LinksScreen != null)
+            {
+                Scaffold?.ShowTab(Tab.Links);
+                LinksScreen.Inspect(link);
+                return;
+            }
             var path = LinkPath.Extract(link);
             if (path == null) return;
             var entry = await Runner.Run(Links.Inspect(path));

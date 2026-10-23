@@ -75,7 +75,10 @@ namespace GrovsTestApp
         public string Detail;
         public string Code;
         public TestAction Action;
+        /// <summary>The link a Link entry was opened from, or the link a Create entry made.</summary>
         public string Link;
         public LinkSources Sources;
+        /// <summary>How long the action took. Zero for entries that were not run by the runner.</summary>
+        public long ElapsedMs;
     }
 }

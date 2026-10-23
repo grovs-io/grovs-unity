@@ -49,6 +49,36 @@ namespace GrovsTestApp.Tests
         }
 
         [Test]
+        public void Elapsed_time_is_kept_on_the_entry()
+        {
+            var entry = Run(Action(() => Task.FromResult(new ActionResult())));
+            Assert.AreEqual(12, entry.ElapsedMs);
+        }
+
+        [Test]
+        public void Created_link_is_kept_on_a_create_entry()
+        {
+            var create = Action(() => Task.FromResult(new ActionResult { Value = "https://x.link/abc" }));
+            create.Type = LogType.Create;
+            Assert.AreEqual("https://x.link/abc", Run(create).Link);
+        }
+
+        [Test]
+        public void Failed_create_has_no_link()
+        {
+            var create = Action(() => Task.FromResult(new ActionResult { State = LogState.Error, Value = "https://x.link/abc" }));
+            create.Type = LogType.Create;
+            Assert.IsNull(Run(create).Link);
+        }
+
+        [Test]
+        public void Value_of_other_types_is_not_a_link()
+        {
+            var entry = Run(Action(() => Task.FromResult(new ActionResult { Value = "https://x.link/abc" })));
+            Assert.IsNull(entry.Link);
+        }
+
+        [Test]
         public void Detail_less_result_gets_only_the_time()
         {
             var entry = Run(Action(() => Task.FromResult(new ActionResult())));
