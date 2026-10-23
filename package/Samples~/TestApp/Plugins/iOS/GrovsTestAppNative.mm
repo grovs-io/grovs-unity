@@ -1,7 +1,7 @@
 #import <UIKit/UIKit.h>
 #import <UserNotifications/UserNotifications.h>
 
-extern UIViewController* UnityGetGLViewController(void);
+extern "C" UIViewController* UnityGetGLViewController(void);
 
 typedef void (*GrovsTestAppPermissionCallback)(int status);
 

@@ -46,7 +46,7 @@ namespace GrovsTestApp
             {
                 intent.Call<AndroidJavaObject>("setType", "text/plain");
                 intent.Call<AndroidJavaObject>("putExtra", "android.intent.extra.TEXT", text);
-                using (var chooser = chooserClass.CallStatic<AndroidJavaObject>("createChooser", intent, (string)null))
+                using (var chooser = chooserClass.CallStatic<AndroidJavaObject>("createChooser", intent, "Share"))
                     activity.Call("startActivity", chooser);
             }
         }
@@ -70,9 +70,17 @@ namespace GrovsTestApp
                 return;
             }
 
+            var finished = false;
+            Action<NotificationStatus> finish = status =>
+            {
+                if (finished) return;
+                finished = true;
+                callback?.Invoke(status);
+            };
             var callbacks = new PermissionCallbacks();
-            callbacks.PermissionGranted += _ => callback?.Invoke(NotificationStatus.Allowed);
-            callbacks.PermissionDenied += _ => callback?.Invoke(NotificationStatus.NotAllowed);
+            callbacks.PermissionGranted += _ => finish(NotificationStatus.Allowed);
+            callbacks.PermissionDenied += _ => finish(NotificationStatus.NotAllowed);
+            callbacks.PermissionDeniedAndDontAskAgain += _ => finish(NotificationStatus.NotAllowed);
             Permission.RequestUserPermission(PostNotifications, callbacks);
         }
 
@@ -93,6 +101,14 @@ namespace GrovsTestApp
             using (var activity = Activity)
             using (var manager = activity.Call<AndroidJavaObject>("getPackageManager"))
             using (var launch = manager.Call<AndroidJavaObject>("getLaunchIntentForPackage", Application.identifier))
+            {
+                if (launch == null) return;
+                Relaunch(activity, launch);
+            }
+        }
+
+        static void Relaunch(AndroidJavaObject activity, AndroidJavaObject launch)
+        {
             using (var component = launch.Call<AndroidJavaObject>("getComponent"))
             using (var intentClass = new AndroidJavaClass("android.content.Intent"))
             using (var restart = intentClass.CallStatic<AndroidJavaObject>("makeRestartActivityTask", component))
@@ -160,6 +176,7 @@ namespace GrovsTestApp
                 }
                 catch (AndroidJavaException)
                 {
+                    if (SdkInt < 24) return true;
                     using (var manager = activity.Call<AndroidJavaObject>("getSystemService", "notification"))
                         return manager.Call<bool>("areNotificationsEnabled");
                 }
@@ -180,7 +197,11 @@ namespace GrovsTestApp
                 string token = null;
                 try
                 {
-                    if (task.Call<bool>("isSuccessful")) token = task.Call<string>("getResult");
+                    if (task.Call<bool>("isSuccessful"))
+                    {
+                        using (var result = task.Call<AndroidJavaObject>("getResult"))
+                            token = result?.Call<string>("toString");
+                    }
                 }
                 catch (Exception)
                 {
