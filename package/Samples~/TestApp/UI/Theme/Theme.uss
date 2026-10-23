@@ -60,11 +60,3 @@
     font-size: 22px;
     color: var(--text);
 }
-
-.text-field {
-    min-height: 44px;
-    border-radius: 8px;
-    border-width: 1px;
-    border-color: var(--border);
-    background-color: var(--background);
-}

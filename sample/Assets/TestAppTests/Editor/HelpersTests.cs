@@ -140,5 +140,21 @@ namespace GrovsTestApp.Tests
         {
             for (var i = 0; i < 50; i++) StringAssert.IsMatch(@"^qa_\d{6}$", RandomId.Qa());
         }
+
+        [Test]
+        public void ChipText_commits_everything_before_the_last_comma()
+        {
+            var (commit, rest) = ChipText.Split("a,b, c");
+            CollectionAssert.AreEqual(new[] { "a", "b" }, commit);
+            Assert.AreEqual(" c", rest);
+        }
+
+        [Test]
+        public void ChipText_without_a_comma_commits_nothing()
+        {
+            var (commit, rest) = ChipText.Split("a");
+            CollectionAssert.IsEmpty(commit);
+            Assert.AreEqual("a", rest);
+        }
     }
 }

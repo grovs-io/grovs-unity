@@ -127,6 +127,25 @@ namespace GrovsTestApp
         }
     }
 
+    public static class ChipText
+    {
+        /// <summary>Splits typed chip text: trimmed parts before the last comma are committed, the rest stays typed.</summary>
+        public static (List<string> commit, string rest) Split(string typed)
+        {
+            var text = typed ?? "";
+            var last = text.LastIndexOf(',');
+            var commit = new List<string>();
+            if (last < 0) return (commit, text);
+
+            foreach (var part in text.Substring(0, last).Split(','))
+            {
+                var trimmed = part.Trim();
+                if (trimmed.Length > 0 && !commit.Contains(trimmed)) commit.Add(trimmed);
+            }
+            return (commit, text.Substring(last + 1));
+        }
+    }
+
     public static class RelativeTime
     {
         public static string Format(TimeSpan age)
