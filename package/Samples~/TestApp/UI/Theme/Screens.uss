@@ -97,3 +97,46 @@
 .links__bar {
     flex-shrink: 0;
 }
+
+/* Events */
+
+.events > .screen {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.events__full {
+    margin-top: 8px;
+}
+
+.events__row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.events__grow {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.events__small {
+    margin-left: 6px;
+    min-width: 72px;
+}
+
+.events__gap,
+.event-form__gap {
+    margin-top: 10px;
+}
+
+.event-form__anyway {
+    align-self: flex-start;
+}
+
+.events__sheet-title {
+    margin-bottom: 8px;
+}
+
+.receipt-field {
+    min-height: 120px;
+}

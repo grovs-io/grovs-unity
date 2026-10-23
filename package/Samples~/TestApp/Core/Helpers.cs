@@ -89,11 +89,13 @@ namespace GrovsTestApp
 
         public static IReadOnlyCollection<string> Reserved => ReservedNames;
 
+        public static bool IsReserved(string name) => ReservedNames.Contains((name ?? "").Trim().ToLowerInvariant());
+
         public static string NameError(string name)
         {
             var trimmed = (name ?? "").Trim();
             if (trimmed.Length == 0) return "Enter an event name";
-            if (ReservedNames.Contains(trimmed.ToLowerInvariant()))
+            if (IsReserved(trimmed))
                 return "\"" + trimmed + "\" is reserved by the SDK";
             return null;
         }

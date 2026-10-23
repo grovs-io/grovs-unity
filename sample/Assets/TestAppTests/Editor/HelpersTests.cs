@@ -72,6 +72,14 @@ namespace GrovsTestApp.Tests
         }
 
         [Test]
+        public void IsReserved_ignores_case_and_spaces()
+        {
+            Assert.IsTrue(EventRules.IsReserved(" Install "));
+            Assert.IsFalse(EventRules.IsReserved("install_now"));
+            Assert.IsFalse(EventRules.IsReserved(null));
+        }
+
+        [Test]
         public void NameError_checks_blank_and_reserved()
         {
             Assert.IsNull(EventRules.NameError("level_up"));

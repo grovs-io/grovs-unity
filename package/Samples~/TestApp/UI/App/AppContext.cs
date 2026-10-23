@@ -68,6 +68,9 @@ namespace GrovsTestApp
         /// <summary>The Links tab of the scene that is showing now.</summary>
         public LinksScreen LinksScreen { get; internal set; }
 
+        /// <summary>The Events tab of the scene that is showing now.</summary>
+        public EventsScreen EventsScreen { get; internal set; }
+
         /// <summary>The scaffold of the scene that is showing now.</summary>
         public AppScaffold Scaffold { get; internal set; }
 
