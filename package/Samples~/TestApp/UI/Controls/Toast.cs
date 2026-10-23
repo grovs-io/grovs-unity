@@ -22,7 +22,9 @@ namespace GrovsTestApp
             toast.style.bottom = BottomOffset + Overlay.SafeBottom(host);
             var bubble = Ui.Box("toast__bubble");
             bubble.pickingMode = PickingMode.Ignore;
-            bubble.Add(Ui.Text(text, "t-body", "toast__text"));
+            var label = Ui.Text(text, "t-body", "toast__text");
+            label.pickingMode = PickingMode.Ignore;
+            bubble.Add(label);
             toast.Add(bubble);
             layer.Add(toast);
 

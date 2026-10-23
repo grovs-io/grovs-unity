@@ -26,6 +26,14 @@ namespace GrovsTestApp
             _dismiss();
             Closed?.Invoke();
         }
+
+        // For an overlay removed without Close, for example when its screen is rebuilt.
+        internal void MarkClosed()
+        {
+            if (!IsOpen) return;
+            IsOpen = false;
+            Closed?.Invoke();
+        }
     }
 
     /// <summary>
@@ -41,6 +49,20 @@ namespace GrovsTestApp
 
         public static VisualElement DefaultHost =>
             AppRoot.Instance != null ? AppRoot.Instance.Root : throw new InvalidOperationException("No AppRoot to show the overlay on");
+
+        /// <summary>The app root, or the document root holding the element when there is no app.</summary>
+        public static VisualElement HostFor(VisualElement element)
+        {
+            if (AppRoot.Instance != null && AppRoot.Instance.Root != null) return AppRoot.Instance.Root;
+            var top = element.panel?.visualTree;
+            if (top == null) return DefaultHost;
+            var root = element;
+            while (root.parent != null && root.parent != top) root = root.parent;
+            return root;
+        }
+
+        /// <summary>The newest open sheet or dialog, the one Escape closes.</summary>
+        public static OverlayHandle Newest => Open.Count > 0 ? Open[Open.Count - 1] : null;
 
         public static VisualElement Layer(VisualElement host)
         {
@@ -67,6 +89,11 @@ namespace GrovsTestApp
                 item.schedule.Execute(item.RemoveFromHierarchy).StartingIn(AnimationMs);
             });
             Open.Add(handle);
+            item.RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                Open.Remove(handle);
+                handle.MarkClosed();
+            });
             CloseOnBack(item, handle);
             Layer(host).Add(item);
             return handle;
@@ -79,7 +106,7 @@ namespace GrovsTestApp
             return float.IsNaN(padding) ? 0 : padding;
         }
 
-        static bool IsNewest(OverlayHandle handle) => Open.Count > 0 && Open[Open.Count - 1] == handle;
+        static bool IsNewest(OverlayHandle handle) => Newest == handle;
 
 #if ENABLE_LEGACY_INPUT_MANAGER
         // The Android back button reaches Unity as Escape but not as a UI Toolkit event, so it is

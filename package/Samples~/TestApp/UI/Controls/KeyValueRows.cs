@@ -166,7 +166,7 @@ namespace GrovsTestApp
             buttons.Add(paste);
             buttons.Add(apply);
             content.Add(buttons);
-            sheet = Sheet.Show(content);
+            sheet = Sheet.Show(Overlay.HostFor(this), content);
         }
 
         static string Badge(ValueKind kind)

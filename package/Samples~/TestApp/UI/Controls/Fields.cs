@@ -45,7 +45,8 @@ namespace GrovsTestApp
             });
             Field.RegisterCallback<KeyDownEvent>(evt =>
             {
-                var enter = evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter || evt.character == '\n';
+                // One Enter press sends a key event and a '\n' character event; only the key event counts.
+                var enter = evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter;
                 if (enter && !multiline) Submitted?.Invoke();
             }, TrickleDown.TrickleDown);
             Field.RegisterCallback<FocusInEvent>(_ => Focused?.Invoke());

@@ -52,12 +52,18 @@ namespace GrovsTestApp
             set
             {
                 if (value == _expanded) return;
-                _expanded = value;
-                EnableInClassList("fold-row--expanded", value);
-                RefreshSummary();
-                Animate(value);
+                SetExpandedWithoutNotify(value);
                 Toggled?.Invoke(value);
             }
+        }
+
+        public void SetExpandedWithoutNotify(bool expanded)
+        {
+            if (expanded == _expanded) return;
+            _expanded = expanded;
+            EnableInClassList("fold-row--expanded", expanded);
+            RefreshSummary();
+            Animate(expanded);
         }
 
         public void RefreshSummary()
@@ -165,7 +171,7 @@ namespace GrovsTestApp
         {
             if (_raw == null) return;
             GUIUtility.systemCopyBuffer = _raw;
-            Toast.Show("Copied");
+            Toast.Show(Overlay.HostFor(this), "Copied");
         }
     }
 }

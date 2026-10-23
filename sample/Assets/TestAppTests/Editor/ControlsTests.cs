@@ -38,6 +38,25 @@ namespace GrovsTestApp.Tests
             }
         }
 
+        static void SendPointer<T>(VisualElement target, EventType type, Vector2 position) where T : PointerEventBase<T>, new()
+        {
+            var system = new Event { type = type, mousePosition = position, button = 0 };
+            using (var evt = PointerEventBase<T>.GetPooled(system))
+            {
+                evt.target = target;
+                target.SendEvent(evt);
+            }
+        }
+
+        static void SendKey(VisualElement target, char character, KeyCode key)
+        {
+            using (var evt = KeyDownEvent.GetPooled(character, key, EventModifiers.None))
+            {
+                evt.target = target;
+                target.SendEvent(evt);
+            }
+        }
+
         [Test]
         public void Segment_fires_once_on_a_click()
         {
@@ -114,6 +133,107 @@ namespace GrovsTestApp.Tests
             var toasts = _root.Query(className: "toast").ToList();
             Assert.AreEqual(1, toasts.Count);
             Assert.AreEqual("Copied", toasts[0].Q<Label>().text);
+        }
+
+        [Test]
+        public void InfoButton_tap_does_not_toggle_its_row()
+        {
+            var changes = 0;
+            var row = new SwitchRow("SDK enabled", false, _ => changes++, help: ("About", "Body"));
+            _root.Add(row);
+            var info = row.Q<InfoButton>();
+
+            SendPointer<PointerDownEvent>(info, EventType.MouseDown, Vector2.zero);
+            Click(info);
+
+            Assert.IsFalse(row.Value);
+            Assert.AreEqual(0, changes);
+            Assert.NotNull(_root.Q(className: "dialog"), "The tap still opens the dialog");
+        }
+
+        [Test]
+        public void Submitted_fires_once_per_enter_press()
+        {
+            var submitted = 0;
+            var field = new AppTextField("name");
+            field.Submitted += () => submitted++;
+            _root.Add(field);
+            field.Input.Focus();
+
+            SendKey(field.Input, '\0', KeyCode.Return);
+            SendKey(field.Input, '\n', KeyCode.None);
+
+            Assert.AreEqual(1, submitted);
+        }
+
+        [Test]
+        public void Toast_never_catches_taps()
+        {
+            Toast.Show(_root, "Copied");
+
+            var toast = _root.Q(className: "toast");
+            toast.Query<VisualElement>().ForEach(e => Assert.AreEqual(PickingMode.Ignore, e.pickingMode, e.GetType().Name));
+        }
+
+        [Test]
+        public void AppButton_press_ends_when_the_finger_moves()
+        {
+            var button = new AppButton("Run", () => { }, onLongPress: () => { });
+            _root.Add(button);
+
+            SendPointer<PointerDownEvent>(button, EventType.MouseDown, new Vector2(10, 10));
+            SendPointer<PointerMoveEvent>(button, EventType.MouseDrag, new Vector2(13, 10));
+            Assert.IsTrue(button.ClassListContains(Ui.PressedClass), "A small wobble keeps the press");
+
+            SendPointer<PointerMoveEvent>(button, EventType.MouseDrag, new Vector2(30, 10));
+            Assert.IsFalse(button.ClassListContains(Ui.PressedClass));
+        }
+
+        [Test]
+        public void FoldRow_silent_setter_does_not_raise_toggled()
+        {
+            var toggled = 0;
+            var row = new FoldRow("Advanced", () => "3 set", new Label("content"));
+            row.Toggled += _ => toggled++;
+            _root.Add(row);
+
+            row.SetExpandedWithoutNotify(true);
+            Assert.IsTrue(row.Expanded);
+            Assert.AreEqual(0, toggled);
+
+            row.Expanded = false;
+            Assert.AreEqual(1, toggled);
+        }
+
+        [Test]
+        public void ChipPicker_notifies_only_on_a_real_change()
+        {
+            var changes = new List<string>();
+            var picker = new ChipPicker(new[] { "USD", "EUR", "GBP" }, "USD", changes.Add);
+            _root.Add(picker);
+
+            picker.Value = "USD";
+            picker.Value = "EUR";
+            picker.SetValueWithoutNotify("GBP");
+
+            CollectionAssert.AreEqual(new[] { "EUR" }, changes);
+            Assert.AreEqual("GBP", picker.Value);
+        }
+
+        [Test]
+        public void Overlay_forgets_a_sheet_removed_without_close()
+        {
+            var host = new VisualElement();
+            _root.Add(host);
+            var stale = Sheet.Show(host, new Label("old screen"));
+
+            host.RemoveFromHierarchy();
+            var fresh = Sheet.Show(_root, new Label("new screen"));
+
+            Assert.IsFalse(stale.IsOpen);
+            Assert.AreSame(fresh, Overlay.Newest);
+            fresh.Close();
+            Assert.IsNull(Overlay.Newest);
         }
 
         [Test]

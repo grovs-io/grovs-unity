@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace GrovsTestApp
@@ -12,9 +13,11 @@ namespace GrovsTestApp
     public class AppButton : VisualElement
     {
         const long LongPressMs = 500;
+        const float MoveSlop = 8f;
 
         readonly Label _label;
         IVisualElementScheduledItem _pendingLongPress;
+        Vector2 _pressStart;
         bool _longPressed;
         bool _enabled = true;
 
@@ -34,6 +37,7 @@ namespace GrovsTestApp
             if (onLongPress != null) LongPressed += onLongPress;
 
             RegisterCallback<PointerDownEvent>(OnPointerDown);
+            RegisterCallback<PointerMoveEvent>(OnPointerMove);
             RegisterCallback<PointerUpEvent>(_ => EndPress());
             RegisterCallback<PointerLeaveEvent>(_ => EndPress());
             RegisterCallback<PointerCancelEvent>(_ => EndPress());
@@ -59,6 +63,7 @@ namespace GrovsTestApp
         void OnPointerDown(PointerDownEvent evt)
         {
             _longPressed = false;
+            _pressStart = evt.position;
             if (_enabled) AddToClassList(Ui.PressedClass);
             if (LongPressed == null) return;
             _pendingLongPress?.Pause();
@@ -68,6 +73,13 @@ namespace GrovsTestApp
                 RemoveFromClassList(Ui.PressedClass);
                 LongPressed?.Invoke();
             }).StartingIn(LongPressMs);
+        }
+
+        // A finger that moves is scrolling, not pressing.
+        void OnPointerMove(PointerMoveEvent evt)
+        {
+            if (_pendingLongPress == null && !ClassListContains(Ui.PressedClass)) return;
+            if (((Vector2)evt.position - _pressStart).sqrMagnitude > MoveSlop * MoveSlop) EndPress();
         }
 
         void EndPress()

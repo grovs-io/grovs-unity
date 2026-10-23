@@ -11,7 +11,14 @@ namespace GrovsTestApp
             var ring = Ui.Box("info-button__ring");
             ring.Add(Ui.Text("?", "info-button__mark"));
             Add(ring);
-            Ui.OnTap(this, () => InfoDialog.Show(title, body));
+            Ui.TrackPress(this);
+            // A "?" often sits inside a tappable row, which must not react to it.
+            RegisterCallback<PointerDownEvent>(evt => evt.StopPropagation());
+            RegisterCallback<ClickEvent>(evt =>
+            {
+                evt.StopPropagation();
+                InfoDialog.Show(Overlay.HostFor(this), title, body);
+            });
         }
     }
 

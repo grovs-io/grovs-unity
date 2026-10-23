@@ -210,8 +210,9 @@ namespace GrovsTestApp
             get => _selected;
             set
             {
+                var changed = (value ?? "") != _selected;
                 SetValueWithoutNotify(value);
-                Changed?.Invoke(_selected);
+                if (changed) Changed?.Invoke(_selected);
             }
         }
 
@@ -226,9 +227,10 @@ namespace GrovsTestApp
 
         void Select(string value)
         {
+            var changed = (value ?? "") != _selected;
             _selected = value ?? "";
             Rebuild();
-            Changed?.Invoke(_selected);
+            if (changed) Changed?.Invoke(_selected);
         }
 
         void Rebuild()
