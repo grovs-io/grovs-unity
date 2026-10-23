@@ -3,5 +3,6 @@
     <Style src="Theme/Light.uss" />
     <Style src="Theme/Dark.uss" />
     <Style src="Theme/Controls.uss" />
+    <Style src="Theme/App.uss" />
     <ui:VisualElement name="root" class="app-root theme-light" />
 </ui:UXML>
