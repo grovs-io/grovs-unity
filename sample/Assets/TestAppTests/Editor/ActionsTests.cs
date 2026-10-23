@@ -247,6 +247,43 @@ namespace GrovsTestApp.Tests
         }
 
         [Test]
+        public void Track_replays_the_tags_it_was_built_with()
+        {
+            var form = new EventForm { Tags = new List<string> { "a", "b" } };
+            var action = _events.Track(form, false);
+            form.Tags.Clear();
+            form.Tags.Add("c");
+            Run(action);
+            CollectionAssert.AreEqual(new[] { "a", "b" }, _api.LastTrackTags);
+        }
+
+        [Test]
+        public void Generate_replays_the_tags_it_was_built_with()
+        {
+            var form = new LinkForm { Tags = new List<string> { "a", "b" } };
+            var action = _links.Generate(form);
+            form.Tags.Clear();
+            form.Tags.Add("c");
+            Run(action);
+            CollectionAssert.AreEqual(new[] { "a", "b" }, _api.LastOptions.Tags);
+        }
+
+        [Test]
+        public void Set_excluded_and_global_tags_replay_the_lists_they_were_built_with()
+        {
+            var screens = new List<string> { "A", "B" };
+            var excluded = _inApp.SetExcluded(screens);
+            var tags = new List<string> { "x" };
+            var global = _events.GlobalTags(tags);
+            screens.Clear();
+            tags.Clear();
+            Run(excluded);
+            Run(global);
+            CollectionAssert.AreEqual(new[] { "A", "B" }, _api.LastExcluded);
+            CollectionAssert.AreEqual(new[] { "x" }, _api.LastGlobalTags);
+        }
+
+        [Test]
         public void Discard_waiting_and_close_current_pass_the_flag()
         {
             Run(_inApp.CloseCurrent());

@@ -23,7 +23,8 @@ namespace GrovsTestApp
 
         public static string StyleLabel(CallStyle style) => style == CallStyle.Async ? "async" : "callback";
 
-        public static IList<string> NullIfEmpty(List<string> list) => list == null || list.Count == 0 ? null : list;
+        /// <summary>A copy, so an action replays what it was built with even if the form changes later.</summary>
+        public static IList<string> NullIfEmpty(List<string> list) => list == null || list.Count == 0 ? null : new List<string>(list);
 
         public static IDictionary<string, object> MapOrNull(IEnumerable<KeyValueRow> rows)
         {

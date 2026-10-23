@@ -42,10 +42,13 @@ namespace GrovsTestApp
             Make("Debug logging " + (on ? "on" : "off"), "SetInAppDebugLogging", false, "applied",
                 () => _api.SetInAppDebugLogging(on), ("enabled", on));
 
-        public TestAction SetExcluded(List<string> screens) =>
-            Make("Excluded screens set", "SetInAppExcludedScreens", false,
+        public TestAction SetExcluded(List<string> list)
+        {
+            var screens = new List<string>(list);
+            return Make("Excluded screens set", "SetInAppExcludedScreens", false,
                 screens.Count == 0 ? "none" : string.Join(", ", screens),
                 () => _api.SetInAppExcludedScreens(screens), ("screens", screens));
+        }
 
         TestAction Discard(string title, bool dismissCurrent) =>
             Make(title, "DiscardInAppMessages", true, "paused",
