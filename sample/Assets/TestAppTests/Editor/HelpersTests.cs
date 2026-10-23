@@ -26,6 +26,7 @@ namespace GrovsTestApp.Tests
         [TestCase("4,9", 490)]
         [TestCase("5", 500)]
         [TestCase("0.05", 5)]
+        [TestCase("21474836.47", 2147483647)]
         public void Money_parses_cents(string input, int expected)
         {
             Assert.AreEqual(expected, Money.ParseCents(input));
@@ -38,6 +39,9 @@ namespace GrovsTestApp.Tests
         [TestCase("4.")]
         [TestCase(null)]
         [TestCase("99999999999")]
+        [TestCase("4611686018427387904")]
+        [TestCase("21474836.48")]
+        [TestCase("4.\u0669")]
         public void Money_rejects_bad_amounts(string input)
         {
             Assert.IsNull(Money.ParseCents(input));

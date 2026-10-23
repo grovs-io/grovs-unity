@@ -43,7 +43,7 @@ namespace GrovsTestApp
 
     public static class Money
     {
-        static readonly Regex AmountPattern = new Regex(@"^\d+([.,]\d{1,2})?$");
+        static readonly Regex AmountPattern = new Regex(@"^[0-9]+([.,][0-9]{1,2})?$");
 
         public static int? ParseCents(string input)
         {
@@ -53,6 +53,8 @@ namespace GrovsTestApp
             var parts = v.Replace(',', '.').Split('.');
             var fraction = parts.Length > 1 ? parts[1].PadRight(2, '0') : "00";
             if (!long.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out var whole)) return null;
+
+            if (whole > int.MaxValue / 100) return null;
 
             var cents = whole * 100 + int.Parse(fraction, CultureInfo.InvariantCulture);
             return cents > int.MaxValue ? (int?)null : (int)cents;

@@ -16,6 +16,7 @@ namespace GrovsTestApp.Tests
         [TestCase("2026-10-23", ValueKind.Date)]
         [TestCase("2026-13-40", ValueKind.Text)]
         [TestCase("12a", ValueKind.Text)]
+        [TestCase("\u0663", ValueKind.Text)]
         [TestCase("", ValueKind.Text)]
         [TestCase(null, ValueKind.Text)]
         public void Detect_picks_the_kind(string input, ValueKind expected)

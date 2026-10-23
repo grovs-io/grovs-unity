@@ -16,8 +16,8 @@ namespace GrovsTestApp
 
     public static class KeyValue
     {
-        static readonly Regex NumberPattern = new Regex(@"^-?\d+(\.\d+)?$");
-        static readonly Regex DatePattern = new Regex(@"^\d{4}-\d{2}-\d{2}$");
+        static readonly Regex NumberPattern = new Regex(@"^-?[0-9]+(\.[0-9]+)?$");
+        static readonly Regex DatePattern = new Regex(@"^[0-9]{4}-[0-9]{2}-[0-9]{2}$");
 
         public static ValueKind Detect(string raw)
         {
