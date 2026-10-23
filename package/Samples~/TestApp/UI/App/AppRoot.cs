@@ -39,7 +39,7 @@ namespace GrovsTestApp
                 enabled = false;
                 return;
             }
-            Root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea());
+            Root.RegisterCallback<GeometryChangedEvent>(OnRootGeometryChanged);
 
             if (!_themeRead)
             {
@@ -53,6 +53,7 @@ namespace GrovsTestApp
 
         void OnDisable()
         {
+            Root?.UnregisterCallback<GeometryChangedEvent>(OnRootGeometryChanged);
             if (Scaffold != null && AppContext.Current.Scaffold == Scaffold) AppContext.Current.Scaffold = null;
         }
 
@@ -109,7 +110,10 @@ namespace GrovsTestApp
             Scaffold = new AppScaffold(ctx);
             Root.Add(Scaffold);
             ctx.Scaffold = Scaffold;
+            ctx.ApplyScreens(Scaffold);
         }
+
+        void OnRootGeometryChanged(GeometryChangedEvent _) => ApplySafeArea();
 
         void ApplySafeArea()
         {

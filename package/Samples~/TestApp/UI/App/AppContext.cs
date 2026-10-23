@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GrovsSDK;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace GrovsTestApp
 {
@@ -19,8 +20,38 @@ namespace GrovsTestApp
         const string LinkHistoryKey = "grovs_test_app.link_history";
 
         static AppContext _current;
+        static readonly Dictionary<Tab, Func<AppContext, VisualElement>> ScreenFactories =
+            new Dictionary<Tab, Func<AppContext, VisualElement>>();
+        static Func<AppContext, VisualElement> _settingsFactory;
 
         public static AppContext Current => _current ??= new AppContext();
+
+        /// <summary>
+        /// Play Mode can start without a domain reload, which keeps static fields. The SDK clears its
+        /// events at this point, so the context is dropped too and the next access subscribes again.
+        /// </summary>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        public static void ResetStatics()
+        {
+            _current = null;
+            ScreenFactories.Clear();
+            _settingsFactory = null;
+        }
+
+        /// <summary>
+        /// The screen every scaffold shows for a tab. Every scene builds a new scaffold, so screens are
+        /// registered as factories, for example from a BeforeSceneLoad method in the screen's file.
+        /// </summary>
+        public static void RegisterScreen(Tab tab, Func<AppContext, VisualElement> create) => ScreenFactories[tab] = create;
+
+        public static void RegisterSettings(Func<AppContext, VisualElement> create) => _settingsFactory = create;
+
+        /// <summary>Puts the registered screens into a new scaffold. Tabs without one keep their placeholder.</summary>
+        internal void ApplyScreens(AppScaffold scaffold)
+        {
+            foreach (var pair in ScreenFactories) scaffold.SetScreen(pair.Key, pair.Value(this));
+            if (_settingsFactory != null) scaffold.SetSettingsScreen(_settingsFactory(this));
+        }
 
         public TestLog Log { get; }
         public TestRunner Runner { get; }

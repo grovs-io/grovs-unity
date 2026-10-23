@@ -42,6 +42,7 @@ namespace GrovsTestApp
         readonly Dictionary<Tab, TabItem> _items = new Dictionary<Tab, TabItem>();
         Transition _tabTransition;
         Transition _settingsTransition;
+        bool _typing;
 
         public Tab Current { get; private set; } = Tab.Home;
         public bool SettingsOpen { get; private set; }
@@ -171,6 +172,8 @@ namespace GrovsTestApp
         /// <summary>The keyboard covers the strip and the tab bar, so they step aside while typing.</summary>
         public void SetTyping(bool typing)
         {
+            if (typing == _typing) return;
+            _typing = typing;
             var display = typing ? DisplayStyle.None : DisplayStyle.Flex;
             _strip.style.display = display;
             _tabBar.style.display = display;

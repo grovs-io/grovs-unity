@@ -8,6 +8,9 @@ namespace GrovsTestApp
 
         public static INativeServices Current => _current ??= Create();
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => _current = null;
+
         static INativeServices Create()
         {
             if (Application.isEditor) return new EditorNativeServices();

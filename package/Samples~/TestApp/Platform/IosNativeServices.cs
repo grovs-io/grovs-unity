@@ -11,6 +11,9 @@ namespace GrovsTestApp
 
         static Action<NotificationStatus> _pendingRequest;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => _pendingRequest = null;
+
 #if UNITY_IOS && !UNITY_EDITOR
         [DllImport("__Internal")]
         [return: MarshalAs(UnmanagedType.U1)]

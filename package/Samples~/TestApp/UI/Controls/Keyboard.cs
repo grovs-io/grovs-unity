@@ -17,6 +17,9 @@ namespace GrovsTestApp
 
         static readonly HashSet<IPanel> WatchedPanels = new HashSet<IPanel>();
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => WatchedPanels.Clear();
+
         /// <summary>Scrolls a focused field inside the scroll view into view with room above and below it.</summary>
         public static void Track(ScrollView scroll)
         {

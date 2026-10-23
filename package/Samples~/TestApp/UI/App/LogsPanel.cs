@@ -25,6 +25,13 @@ namespace GrovsTestApp
         OverlayHandle _handle;
         long? _selectedId;
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics()
+        {
+            _open = null;
+            _filter = All;
+        }
+
         public static void Show(AppContext ctx, LogEntry focus = null)
         {
             ctx.Log.MarkSeen();

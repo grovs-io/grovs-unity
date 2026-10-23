@@ -47,6 +47,9 @@ namespace GrovsTestApp
 
         static readonly List<OverlayHandle> Open = new List<OverlayHandle>();
 
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetStatics() => Open.Clear();
+
         public static VisualElement DefaultHost =>
             AppRoot.Instance != null ? AppRoot.Instance.Root : throw new InvalidOperationException("No AppRoot to show the overlay on");
 
