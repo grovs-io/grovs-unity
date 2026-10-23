@@ -17,6 +17,9 @@ namespace GrovsTestApp
             return name + "(\n" + string.Join(",\n", lines) + "\n)";
         }
 
+        /// <summary>One value written the way it appears inside a call.</summary>
+        public static string Render(object value) => Value(value, false);
+
         static string Value(object value, bool inList)
         {
             switch (value)

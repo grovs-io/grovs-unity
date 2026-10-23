@@ -7,6 +7,7 @@ namespace GrovsTestApp
 {
     public enum ValueKind { Text, Number, Bool, Date }
 
+    [Serializable]
     public sealed class KeyValueRow
     {
         public string Key;
