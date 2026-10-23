@@ -1,0 +1,70 @@
+.app-root {
+    flex-grow: 1;
+    background-color: var(--background);
+    color: var(--text);
+    -unity-font-definition: url("Fonts/Geist-Regular SDF.asset");
+    font-size: 14px;
+}
+
+.t-title {
+    -unity-font-definition: url("Fonts/Geist-Bold SDF.asset");
+    font-size: 20px;
+    letter-spacing: -0.2px;
+    color: var(--text);
+}
+
+.t-heading {
+    -unity-font-definition: url("Fonts/Geist-SemiBold SDF.asset");
+    font-size: 14px;
+    color: var(--text);
+}
+
+.t-body {
+    -unity-font-definition: url("Fonts/Geist-Regular SDF.asset");
+    font-size: 14px;
+    color: var(--text);
+}
+
+.t-body-strong {
+    -unity-font-definition: url("Fonts/Geist-Medium SDF.asset");
+    font-size: 14px;
+    color: var(--text);
+}
+
+.t-label {
+    -unity-font-definition: url("Fonts/Geist-Medium SDF.asset");
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.t-caption {
+    -unity-font-definition: url("Fonts/Geist-Regular SDF.asset");
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.t-mono {
+    -unity-font-definition: url("Fonts/GeistMono-Regular SDF.asset");
+    font-size: 12px;
+    color: var(--text);
+}
+
+.t-mono-small {
+    -unity-font-definition: url("Fonts/GeistMono-Medium SDF.asset");
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.t-amount {
+    -unity-font-definition: url("Fonts/Geist-SemiBold SDF.asset");
+    font-size: 22px;
+    color: var(--text);
+}
+
+.text-field {
+    min-height: 44px;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: var(--border);
+    background-color: var(--background);
+}
