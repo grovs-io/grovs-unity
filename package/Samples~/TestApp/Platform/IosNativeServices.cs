@@ -12,7 +12,9 @@ namespace GrovsTestApp
         static Action<NotificationStatus> _pendingRequest;
 
 #if UNITY_IOS && !UNITY_EDITOR
-        [DllImport("__Internal")] static extern bool GrovsTestApp_IsDarkMode();
+        [DllImport("__Internal")]
+        [return: MarshalAs(UnmanagedType.U1)]
+        static extern bool GrovsTestApp_IsDarkMode();
         [DllImport("__Internal")] static extern void GrovsTestApp_Share(string text);
         [DllImport("__Internal")] static extern int GrovsTestApp_NotificationStatus();
         [DllImport("__Internal")] static extern void GrovsTestApp_RequestNotifications(PermissionCallback callback);

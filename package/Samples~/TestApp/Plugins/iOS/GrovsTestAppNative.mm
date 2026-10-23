@@ -30,7 +30,7 @@ extern "C" {
 
 bool GrovsTestApp_IsDarkMode(void)
 {
-    return UITraitCollection.currentTraitCollection.userInterfaceStyle == UIUserInterfaceStyleDark;
+    return UIScreen.mainScreen.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark;
 }
 
 void GrovsTestApp_Share(const char* text)
