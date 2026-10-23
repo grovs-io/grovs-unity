@@ -30,9 +30,14 @@ namespace GrovsTestApp
             var document = GetComponent<UIDocument>();
             Root = document.rootVisualElement.Q("root");
             Root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea());
-            SetDarkMode(false);
+            SetDarkMode(NativeServices.Current.IsDarkMode());
             Build();
             ApplySafeArea();
+        }
+
+        void OnApplicationFocus(bool focus)
+        {
+            if (focus && Root != null) SetDarkMode(NativeServices.Current.IsDarkMode());
         }
 
         void OnDestroy()
