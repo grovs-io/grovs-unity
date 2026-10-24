@@ -18,7 +18,7 @@ Grovs adds deep links, attribution, event tracking, revenue tracking, push campa
 7. [Push notifications](#push-notifications)
 8. [iOS Notification Service Extension](#ios-notification-service-extension)
 9. [Platform differences](#platform-differences)
-10. [Demo sample](#demo-sample)
+10. [Test app sample](#test-app-sample)
 11. [Troubleshooting](#troubleshooting)
 
 ## Install
@@ -418,9 +418,16 @@ The extension downloads and attaches the image of each Grovs push. If you need y
 | Clipboard deferred link | The iOS paste prompt may show on first launch | Needs window focus. Works, because Grovs starts before the activity |
 | In-app message over the game | Shown in a window above Unity's | Shown in a dialog over the Unity activity. Unity may get `OnApplicationFocus(false)` while it is shown |
 
-## Demo sample
+## Test app sample
 
-In Package Manager, select Grovs, open **Samples** and import **Demo**. Open the `GrovsDemo` scene, set your keys in Project Settings and build to a device. The scene has one button per feature: generate and copy a link, show the last deep link, track an event and a screen, set the user id and attributes, toggle consent, pause, resume and discard in-app messages, and log a custom purchase. It draws its UI with IMGUI, so it needs no UI package.
+The test app has a screen for every Grovs feature: links, events, in-app messages, identity and settings, with a log of every call. Use it to try the SDK on a device before you wire it into your game.
+
+1. In Package Manager, select Grovs, open **Samples** and import **Test app**.
+2. Open **File > Build Settings** and add both scenes from the imported `Scenes` folder: `TestApp` first, then `ExcludedScreen`.
+3. Set your keys in Project Settings. To test the excluded screen, turn on **Track scenes**: the scene name is then the current screen.
+4. Build to a device.
+
+It needs no extra UPM packages. It draws its UI with UI Toolkit and bundles the Geist fonts (SIL Open Font License), a QR code generator (MIT) and a small Android library that declares the `POST_NOTIFICATIONS` permission. The licence files sit next to them.
 
 ## Troubleshooting
 

@@ -1,8 +1,26 @@
 # Grovs Unity sample project
 
-A Unity 2022.3 project that uses the Grovs package straight from `../package` (a `file:` dependency). It is used to run the EditMode tests, to make device builds, and by CI. Its one scene, `Assets/Scenes/Smoke.unity`, calls a few Grovs APIs on start and logs the results.
+A Unity 2022.3 project that uses the Grovs package straight from `../package` (a `file:` dependency). It is used to run the EditMode tests, to make device builds, and by CI.
 
-The package's demo scene lives in `package/Samples~/Demo` and is not part of this project. Import it with Package Manager (Grovs > Samples > Demo) if you want it here.
+## Test app
+
+The project's scenes are the package's test app sample. `Assets/TestApp` is a link to `package/Samples~/TestApp`, so edits here change the sample that ships. The build has two scenes: `TestApp`, then `ExcludedScreen`.
+
+The app has four tabs and a settings screen:
+
+- **Home**: SDK status, where the app was opened from, quick actions and the user identity.
+- **Links**: generate a link, show it as a QR code, open it with `HandleUrl` and inspect it.
+- **Events**: events, screen views, purchases, global tags and screen aliases.
+- **In-app**: show, pause, resume and discard in-app messages, the excluded screens and a jump to the `ExcludedScreen` scene.
+- **Settings**: the config baked into the build, SDK enabled and developer settings.
+
+Every action writes an entry to the log. To build it with your own Grovs project:
+
+```
+export GROVS_PROD_KEY=... GROVS_TEST_KEY=... GROVS_URI_SCHEME=... GROVS_LINK_DOMAINS=... GROVS_CLIPBOARD_DOMAINS=...
+export GROVS_BASE_URL=https://api.example.com
+"$UNITY" -batchmode -quit -projectPath sample -buildTarget Android -executeMethod GrovsSampleBuild.BuildAndroid
+```
 
 ## Run the tests
 

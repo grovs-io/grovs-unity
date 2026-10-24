@@ -9,11 +9,6 @@
       "displayName": "Test app",
       "description": "A test app with a screen for every Grovs feature.",
       "path": "Samples~/TestApp"
-    },
-    {
-      "displayName": "Demo",
-      "description": "A scene with one button per Grovs feature.",
-      "path": "Samples~/Demo"
     }
   ]
 }

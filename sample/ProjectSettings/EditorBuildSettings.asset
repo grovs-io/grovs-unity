@@ -11,7 +11,4 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/TestApp/Scenes/ExcludedScreen.unity
     guid: 585880ac301c467787cda60707eb7bfe
-  - enabled: 1
-    path: Assets/Scenes/Smoke.unity
-    guid: 96a518f9b656f4e26943c743b459f914
   m_configObjects: {}
