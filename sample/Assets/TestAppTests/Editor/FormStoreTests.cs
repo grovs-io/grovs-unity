@@ -25,6 +25,26 @@ namespace GrovsTestApp.Tests
         }
 
         [Test]
+        public void Refresh_takes_the_saved_form_when_it_differs()
+        {
+            var screen = _store.Load<EventForm>(FormKeys.Event);
+            _store.Save(FormKeys.Event, new EventForm { Name = "from_home" });
+
+            Assert.IsTrue(_store.Refresh(FormKeys.Event, ref screen));
+            Assert.AreEqual("from_home", screen.Name);
+        }
+
+        [Test]
+        public void Refresh_keeps_the_form_when_nothing_changed()
+        {
+            var screen = _store.Load<PurchaseForm>(FormKeys.Purchase);
+            var same = screen;
+
+            Assert.IsFalse(_store.Refresh(FormKeys.Purchase, ref screen));
+            Assert.AreSame(same, screen);
+        }
+
+        [Test]
         public void Load_without_saved_value_gives_defaults()
         {
             var form = _store.Load<LinkForm>(FormKeys.Link);

@@ -76,6 +76,7 @@ namespace GrovsTestApp
 
         public async void RunTrack(bool anyway = false)
         {
+            SyncFromStore();
             if (!anyway && EventFormFields.EventError(_event) != null) return;
             _ctx.Store.Save(FormKeys.Event, _event);
             var entry = await _ctx.Runner.Run(_ctx.Events.Track(_event, anyway));
@@ -87,6 +88,7 @@ namespace GrovsTestApp
 
         public async void RunScreen()
         {
+            SyncFromStore();
             if (string.IsNullOrWhiteSpace(_screen.Name)) return;
             _ctx.Store.Save(FormKeys.Screen, _screen);
             var entry = await _ctx.Runner.Run(_ctx.Events.Screen(_screen));
@@ -99,6 +101,7 @@ namespace GrovsTestApp
 
         public void RunPurchase()
         {
+            SyncFromStore();
             if (!PurchaseValid()) return;
             _ctx.Store.Save(FormKeys.Purchase, _purchase);
             _ = _ctx.Runner.Run(_ctx.Events.Purchase(_purchase));
@@ -106,6 +109,7 @@ namespace GrovsTestApp
 
         void RunReceipt()
         {
+            SyncFromStore();
             if (string.IsNullOrWhiteSpace(_purchase.StoreReceipt)) return;
             _ctx.Store.Save(FormKeys.Purchase, _purchase);
             _ = _ctx.Runner.Run(_ctx.Events.StoreReceipt(_purchase.StoreReceipt));
@@ -130,18 +134,16 @@ namespace GrovsTestApp
         // The Home sheets edit the same saved forms.
         void OnTabChanged(Tab tab)
         {
-            if (tab != Tab.Events) return;
-            var e = _ctx.Store.Load<EventForm>(FormKeys.Event);
-            var s = _ctx.Store.Load<ScreenForm>(FormKeys.Screen);
-            var p = _ctx.Store.Load<PurchaseForm>(FormKeys.Purchase);
-            if (Same(e, _event) && Same(s, _screen) && Same(p, _purchase)) return;
-            _event = e;
-            _screen = s;
-            _purchase = p;
-            BuildAll();
+            if (tab == Tab.Events) SyncFromStore();
         }
 
-        static bool Same<T>(T a, T b) => JsonUtility.ToJson(a) == JsonUtility.ToJson(b);
+        void SyncFromStore()
+        {
+            var changed = _ctx.Store.Refresh(FormKeys.Event, ref _event);
+            changed |= _ctx.Store.Refresh(FormKeys.Screen, ref _screen);
+            changed |= _ctx.Store.Refresh(FormKeys.Purchase, ref _purchase);
+            if (changed) BuildAll();
+        }
 
         void BuildAll()
         {
@@ -158,7 +160,7 @@ namespace GrovsTestApp
             {
                 _ctx.Store.Save(FormKeys.Event, _event);
                 RefreshTrack();
-            }, () => RunTrack(true));
+            }, () => RunTrack(true), () => RunTrack());
             _eventHost.Add(_eventFields);
 
             _track = new AppButton("Track", () => RunTrack());

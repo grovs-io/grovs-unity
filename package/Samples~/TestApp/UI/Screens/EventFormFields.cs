@@ -22,7 +22,7 @@ namespace GrovsTestApp
 
         public static string EventError(EventForm form) => EventRules.NameError(form.Name) ?? EventRules.TagsError(form.Tags);
 
-        public static VisualElement BuildEvent(EventForm form, Action changed, Action sendAnyway)
+        public static VisualElement BuildEvent(EventForm form, Action changed, Action sendAnyway, Action submit = null)
         {
             var root = Ui.Box("event-form");
             FoldRow more = null;
@@ -32,7 +32,7 @@ namespace GrovsTestApp
             anyway.AddToClassList("event-form__anyway");
             void Refresh()
             {
-                name.Error = EventRules.NameError(form.Name);
+                name.Error = EventError(form);
                 anyway.style.display = EventRules.IsReserved(form.Name) ? DisplayStyle.Flex : DisplayStyle.None;
                 more?.RefreshSummary();
             }
@@ -43,6 +43,7 @@ namespace GrovsTestApp
                 Refresh();
                 changed?.Invoke();
             };
+            if (submit != null) name.Field.Submitted += submit;
             root.Add(name);
             root.Add(anyway);
 
@@ -124,13 +125,17 @@ namespace GrovsTestApp
 
         static FoldRow StartDate(PurchaseForm form, Action changed)
         {
-            var picker = new ChipRow(StartLabels, StartLabel(form.DaysAgo), label =>
+            ChipRow picker = null;
+            FoldRow fold = null;
+            picker = new ChipRow(StartLabels, StartLabel(form.DaysAgo), label =>
             {
                 form.DaysAgo = StartDays[Array.IndexOf(StartLabels, label)];
+                picker.Selected = label;
+                fold?.RefreshSummary();
                 changed?.Invoke();
             });
             picker.AddToClassList("event-form__gap");
-            var fold = new FoldRow("Start date", () => StartLabel(form.DaysAgo) ?? form.DaysAgo + " days ago", picker,
+            fold = new FoldRow("Start date", () => StartLabel(form.DaysAgo) ?? form.DaysAgo + " days ago", picker,
                 help: Help.Get("startDate"));
             return fold;
         }

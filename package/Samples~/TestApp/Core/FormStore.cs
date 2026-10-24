@@ -66,6 +66,15 @@ namespace GrovsTestApp
 
         public void Save<T>(string key, T form) => _prefs.Set(key, JsonUtility.ToJson(form));
 
+        /// <summary>Replaces the form with the saved one when they differ. Returns whether it changed.</summary>
+        public bool Refresh<T>(string key, ref T form) where T : new()
+        {
+            var saved = Load<T>(key);
+            if (JsonUtility.ToJson(saved) == JsonUtility.ToJson(form)) return false;
+            form = saved;
+            return true;
+        }
+
         public T Reset<T>(string key) where T : new()
         {
             _prefs.Delete(key);

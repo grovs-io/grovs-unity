@@ -64,6 +64,7 @@ namespace GrovsTestApp
         public async void RunGenerate()
         {
             if (_running) return;
+            SyncFromStore();
             await Run(_ctx.Links.Generate(_form));
         }
 
@@ -95,11 +96,12 @@ namespace GrovsTestApp
         // The Home sheet edits the same saved form.
         void OnTabChanged(Tab tab)
         {
-            if (tab != Tab.Links) return;
-            var saved = _ctx.Store.Load<LinkForm>(FormKeys.Link);
-            if (JsonUtility.ToJson(saved) == JsonUtility.ToJson(_form)) return;
-            _form = saved;
-            BuildForm();
+            if (tab == Tab.Links) SyncFromStore();
+        }
+
+        void SyncFromStore()
+        {
+            if (_ctx.Store.Refresh(FormKeys.Link, ref _form)) BuildForm();
         }
 
         async System.Threading.Tasks.Task Run(TestAction action)
