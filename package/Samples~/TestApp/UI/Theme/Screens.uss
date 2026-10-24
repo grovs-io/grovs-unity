@@ -296,3 +296,9 @@
 .home__sheet-button {
     margin-top: 12px;
 }
+
+.home__link {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

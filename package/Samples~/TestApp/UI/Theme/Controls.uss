@@ -212,6 +212,30 @@
     align-self: flex-start;
 }
 
+.status-pill--checks {
+    flex-direction: row;
+    align-items: center;
+}
+
+.status-pill__text--next {
+    margin-left: 6px;
+}
+
+.status-pill .stroke-icon {
+    width: 12px;
+    height: 12px;
+    margin-left: 2px;
+}
+
+.status-pill--checks.state-ok .status-pill__text,
+.status-pill--checks.state-ok .stroke-icon { color: var(--ok); }
+.status-pill--checks.state-warning .status-pill__text,
+.status-pill--checks.state-warning .stroke-icon { color: var(--warning); }
+.status-pill--checks.state-error .status-pill__text,
+.status-pill--checks.state-error .stroke-icon { color: var(--error); }
+.status-pill--checks.state-neutral .status-pill__text,
+.status-pill--checks.state-neutral .stroke-icon { color: var(--text-muted); }
+
 .status-pill.state-ok { color: var(--ok); background-color: var(--ok-soft); }
 .status-pill.state-warning { color: var(--warning); background-color: var(--warning-soft); }
 .status-pill.state-error { color: var(--error); background-color: var(--error-soft); }

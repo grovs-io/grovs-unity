@@ -14,14 +14,16 @@ namespace GrovsTestApp
     {
         public static readonly TimeSpan LinkSettleWindow = TimeSpan.FromSeconds(5);
         public const string NotAvailableOnIos = "Not available on iOS";
+        public static readonly string[] CheckedSources = { "event", "last link" };
 
         /// <summary>
-        /// Both sources: ok. One source still inside the window: waiting. One source after the window: the other one missed.
+        /// Both sources: ok, drawn with a check after each name. One source still inside the window: waiting.
+        /// One source after the window: the other one missed.
         /// </summary>
         public static (string text, LogState state) OpenedFromPill(LinkSources sources, TimeSpan age)
         {
             var both = LinkSources.Event | LinkSources.LastDeeplink;
-            if ((sources & both) == both) return ("event ✓ last link ✓", LogState.Ok);
+            if ((sources & both) == both) return (string.Join(" ", CheckedSources), LogState.Ok);
             if (age <= LinkSettleWindow) return ("waiting", LogState.Neutral);
             return ((sources & LinkSources.Event) == 0 ? "event missed" : "last link missed", LogState.Error);
         }
@@ -39,6 +41,14 @@ namespace GrovsTestApp
                 ? NotificationAllowAction.OpenSettings
                 : NotificationAllowAction.Request;
 
+        /// <summary>After a Track run: a name the SDK accepted goes to the front of the recent ones. Returns whether the form changed.</summary>
+        public static bool RememberTracked(EventForm form, LogState state)
+        {
+            if (state == LogState.Error) return false;
+            Recents.Remember(form.Recent, form.Name.Trim());
+            return true;
+        }
+
         public static bool IsWebUrl(string text)
         {
             return Uri.TryCreate(text?.Trim(), UriKind.Absolute, out var uri)
@@ -54,6 +64,59 @@ namespace GrovsTestApp
             var parts = rows.Where(r => !string.IsNullOrWhiteSpace(r.Key)).Select(r => r.Key + "=" + r.Value);
             var text = string.Join(", ", parts);
             return text.Length == 0 ? "none" : text;
+        }
+    }
+
+    /// <summary>Asks for the push token and ignores new asks while one is still waiting for its answer.</summary>
+    public sealed class PushTokenRequest
+    {
+        readonly Action<Action<string>> _get;
+
+        public bool Requesting { get; private set; }
+        public string Token { get; private set; }
+
+        public event Action Changed;
+
+        public PushTokenRequest(Action<Action<string>> get)
+        {
+            _get = get;
+        }
+
+        /// <summary>Returns false when a request is already running.</summary>
+        public bool Start()
+        {
+            if (Requesting) return false;
+            Requesting = true;
+            Changed?.Invoke();
+            _get(token =>
+            {
+                Requesting = false;
+                Token = string.IsNullOrEmpty(token) ? null : token;
+                Changed?.Invoke();
+            });
+            return true;
+        }
+    }
+
+    /// <summary>A pill whose sources each end with a drawn check mark.</summary>
+    sealed class CheckedPill : VisualElement
+    {
+        public const string CheckPath = "M5 12.5 L10 17.5 L19 7";
+
+        public CheckedPill(IEnumerable<string> sources, LogState state)
+        {
+            AddToClassList("status-pill");
+            AddToClassList("status-pill--checks");
+            Ui.SetStateClass(this, state);
+            var first = true;
+            foreach (var source in sources)
+            {
+                var label = Ui.Text(source, "t-caption", "status-pill__text");
+                label.EnableInClassList("status-pill__text--next", !first);
+                Add(label);
+                Add(new StrokeIcon(CheckPath, 2.6f));
+                first = false;
+            }
         }
     }
 
@@ -78,8 +141,7 @@ namespace GrovsTestApp
         IVisualElementScheduledItem _openedSettle;
         IdentityForm _identity;
         IdentityForm _draft;
-        string _pushToken;
-        bool _pushRequesting;
+        readonly PushTokenRequest _push;
         bool _editingIdentity;
         bool _generating;
 
@@ -93,6 +155,8 @@ namespace GrovsTestApp
             _ctx = ctx;
             AddToClassList("home");
             _identity = ctx.Store.Load<IdentityForm>(FormKeys.Identity);
+            _push = new PushTokenRequest(ctx.Native.GetPushToken);
+            _push.Changed += BuildPush;
 
             _scroll = AppScaffold.NewScreen();
             _scroll.Add(BuildHeader());
@@ -127,7 +191,6 @@ namespace GrovsTestApp
             BuildNotifications();
             BuildPush();
             BuildIdentity();
-            RefreshOpenedFrom();
             RefreshQuickActions();
             Keyboard.Track(_scroll);
             Add(_scroll);
@@ -157,7 +220,9 @@ namespace GrovsTestApp
 
         void OnTabChanged(Tab tab)
         {
-            if (tab == Tab.Home) RefreshQuickActions();
+            if (tab != Tab.Home) return;
+            RefreshQuickActions();
+            RefreshOpenedFrom();
         }
 
         void OnResumed()
@@ -240,26 +305,15 @@ namespace GrovsTestApp
 
         void RequestPushToken()
         {
-            if (IsIos)
-            {
-                BuildPush();
-                return;
-            }
-            _pushRequesting = true;
-            BuildPush();
-            _ctx.Native.GetPushToken(token =>
-            {
-                _pushRequesting = false;
-                _pushToken = string.IsNullOrEmpty(token) ? null : token;
-                BuildPush();
-            });
+            if (IsIos) BuildPush();
+            else _push.Start();
         }
 
         void BuildPush()
         {
             _pushHost.Clear();
-            var placeholder = HomeRules.PushTokenPlaceholder(IsIos, _pushRequesting);
-            _pushHost.Add(new CopyRow("Push token", IsIos ? null : _pushToken, placeholder, Help.Get("pushToken")));
+            var placeholder = HomeRules.PushTokenPlaceholder(IsIos, _push.Requesting);
+            _pushHost.Add(new CopyRow("Push token", IsIos ? null : _push.Token, placeholder, Help.Get("pushToken")));
         }
 
         // Opened from
@@ -280,7 +334,10 @@ namespace GrovsTestApp
             _openedTrailing.text = RelativeTime.Format(age);
             var (text, state) = HomeRules.OpenedFromPill(latest.Sources, age);
             var row = new SettingRow(latest.Link ?? "no link", () => _ctx.Scaffold?.OpenLogs(latest));
-            row.Trailing.Add(new StatusPill(text, state));
+            row.Q<Label>(className: "label-with-help__text")?.AddToClassList("home__link");
+            row.Trailing.Add(state == LogState.Ok
+                ? (VisualElement)new CheckedPill(HomeRules.CheckedSources, state)
+                : new StatusPill(text, state));
             _openedBody.Add(row);
 
             var remaining = HomeRules.LinkSettleWindow - age;
@@ -436,9 +493,15 @@ namespace GrovsTestApp
                 RefreshQuickActions();
                 return;
             }
+            TrackDirect(anyway);
+        }
+
+        async void TrackDirect(bool anyway)
+        {
             var form = _ctx.Store.Load<EventForm>(FormKeys.Event);
             if (!anyway && EventFormFields.EventError(form) != null) return;
-            _ = _ctx.Runner.Run(_ctx.Events.Track(form, anyway));
+            var entry = await _ctx.Runner.Run(_ctx.Events.Track(form, anyway));
+            if (HomeRules.RememberTracked(form, entry.State)) _ctx.Store.Save(FormKeys.Event, form);
         }
 
         void LogPurchase()

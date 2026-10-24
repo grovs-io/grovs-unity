@@ -12,7 +12,8 @@ namespace GrovsTestApp.Tests
         public void Pill_is_ok_when_both_sources_reported(int seconds, LogState state)
         {
             var (text, actual) = HomeRules.OpenedFromPill(Both, TimeSpan.FromSeconds(seconds));
-            Assert.AreEqual("event ✓ last link ✓", text);
+            Assert.AreEqual("event last link", text);
+            CollectionAssert.AreEqual(new[] { "event", "last link" }, HomeRules.CheckedSources);
             Assert.AreEqual(state, actual);
         }
 
@@ -87,6 +88,56 @@ namespace GrovsTestApp.Tests
         {
             var config = new BakedConfig("k", true, null, null, false, true, null);
             Assert.AreEqual("Test · 1.0.0", HomeRules.Caption(config, "1.0.0"));
+        }
+
+        [Test]
+        public void Tracked_name_is_remembered_after_a_run_that_worked()
+        {
+            var form = new EventForm { Name = " signup ", Recent = new System.Collections.Generic.List<string> { "share" } };
+            Assert.IsTrue(HomeRules.RememberTracked(form, LogState.Ok));
+            CollectionAssert.AreEqual(new[] { "signup", "share" }, form.Recent);
+        }
+
+        [Test]
+        public void Tracked_name_is_not_remembered_after_an_error()
+        {
+            var form = new EventForm { Name = "signup" };
+            Assert.IsFalse(HomeRules.RememberTracked(form, LogState.Error));
+            CollectionAssert.IsEmpty(form.Recent);
+        }
+
+        [Test]
+        public void Push_token_request_ignores_a_new_ask_while_one_is_running()
+        {
+            var asks = 0;
+            Action<string> answer = null;
+            var request = new PushTokenRequest(done =>
+            {
+                asks++;
+                answer = done;
+            });
+
+            Assert.IsTrue(request.Start());
+            Assert.IsFalse(request.Start());
+            Assert.AreEqual(1, asks);
+            Assert.IsTrue(request.Requesting);
+
+            answer("token123");
+            Assert.IsFalse(request.Requesting);
+            Assert.AreEqual("token123", request.Token);
+            Assert.IsTrue(request.Start());
+            Assert.AreEqual(2, asks);
+        }
+
+        [Test]
+        public void Push_token_request_keeps_no_token_when_none_comes_back()
+        {
+            Action<string> answer = null;
+            var request = new PushTokenRequest(done => answer = done);
+            request.Start();
+            answer(null);
+            Assert.IsNull(request.Token);
+            Assert.IsFalse(request.Requesting);
         }
     }
 }
