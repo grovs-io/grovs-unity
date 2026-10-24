@@ -12,6 +12,8 @@ namespace GrovsTestApp
         public const string FieldAreaClass = "field-area";
 
         readonly Label _placeholder;
+        TouchScreenKeyboard _keyboard;
+        IVisualElementScheduledItem _keyboardWatch;
 
         public TextField Field { get; }
 
@@ -31,7 +33,8 @@ namespace GrovsTestApp
             Field.AddToClassList("text-input__field");
             Field.textEdition.keyboardType = keyboard;
             Field.textEdition.autoCorrection = false;
-            Field.textEdition.hideMobileInput = false;
+            // Android hides Unity's input strip, like a native field. iOS keeps its bar with the Done button.
+            Field.textEdition.hideMobileInput = Application.platform == RuntimePlatform.Android;
             Add(Field);
 
             _placeholder = Ui.Text(placeholder, "text-input__placeholder");
@@ -49,8 +52,19 @@ namespace GrovsTestApp
                 var enter = evt.keyCode == KeyCode.Return || evt.keyCode == KeyCode.KeypadEnter;
                 if (enter && !multiline) Submitted?.Invoke();
             }, TrickleDown.TrickleDown);
-            Field.RegisterCallback<FocusInEvent>(_ => Focused?.Invoke());
-            Field.RegisterCallback<FocusOutEvent>(_ => Blurred?.Invoke());
+            Field.RegisterCallback<FocusInEvent>(_ =>
+            {
+                _keyboardWatch ??= Field.schedule.Execute(RememberKeyboard).Every(100);
+                _keyboardWatch.Resume();
+                Focused?.Invoke();
+            });
+            Field.RegisterCallback<FocusOutEvent>(_ =>
+            {
+                _keyboardWatch?.Pause();
+                if (!multiline && ClosedWithDone()) Submitted?.Invoke();
+                _keyboard = null;
+                Blurred?.Invoke();
+            });
             UpdatePlaceholder();
         }
 
@@ -89,6 +103,20 @@ namespace GrovsTestApp
         {
             var keyboard = Field.textEdition.touchScreenKeyboard;
             if (keyboard != null && keyboard.active) keyboard.text = value ?? "";
+        }
+
+        // The field drops its keyboard before it loses focus, so the last one seen is kept.
+        void RememberKeyboard()
+        {
+            var keyboard = Field.textEdition.touchScreenKeyboard;
+            if (keyboard != null) _keyboard = keyboard;
+        }
+
+        // The touch keyboard's Done key closes the keyboard without an Enter key event.
+        bool ClosedWithDone()
+        {
+            RememberKeyboard();
+            return _keyboard != null && _keyboard.status == TouchScreenKeyboard.Status.Done;
         }
 
         void UpdatePlaceholder() =>

@@ -11,14 +11,21 @@ namespace GrovsTestApp
         const float Above = 28;
         const float Below = 16;
         const string SpacerName = "keyboard-spacer";
+        const string CoverName = "keyboard-cover";
 
-        // The keyboard slides in over a few hundred milliseconds, so the field is revealed again once it settles.
-        static readonly long[] RevealDelaysMs = { 50, 350, 700 };
+        const long FirstCheckMs = 50;
+        // The keyboard slides in at its own pace, so its height is checked again while a field has focus.
+        const long CheckEveryMs = 150;
 
         static readonly HashSet<IPanel> WatchedPanels = new HashSet<IPanel>();
+        static bool _pointerHeld;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        static void ResetStatics() => WatchedPanels.Clear();
+        static void ResetStatics()
+        {
+            WatchedPanels.Clear();
+            _pointerHeld = false;
+        }
 
         /// <summary>Scrolls a focused field inside the scroll view into view with room above and below it.</summary>
         public static void Track(ScrollView scroll)
@@ -26,32 +33,83 @@ namespace GrovsTestApp
             scroll.RegisterCallback<AttachToPanelEvent>(evt => WatchTaps(evt.destinationPanel));
             if (scroll.panel != null) WatchTaps(scroll.panel);
 
+            VisualElement focusedField = null;
+            var watch = WatchHeight(scroll, _ =>
+            {
+                if (focusedField != null) Reveal(scroll, focusedField);
+            });
             scroll.contentContainer.RegisterCallback<FocusInEvent>(evt =>
             {
-                var field = FieldArea(evt.target as VisualElement);
-                if (field == null) return;
-                foreach (var delay in RevealDelaysMs)
-                    scroll.schedule.Execute(() => Reveal(scroll, field)).StartingIn(delay);
+                focusedField = FieldArea(evt.target as VisualElement);
+                if (focusedField != null) watch.Start();
             }, TrickleDown.TrickleDown);
             scroll.contentContainer.RegisterCallback<FocusOutEvent>(_ =>
-                scroll.schedule.Execute(() => ClearRoom(scroll)).StartingIn(RevealDelaysMs[0]), TrickleDown.TrickleDown);
+            {
+                watch.Stop();
+                WhenReleased(scroll, () => ClearRoom(scroll));
+            }, TrickleDown.TrickleDown);
         }
 
         /// <summary>Moves an element anchored to the bottom of the screen up by the keyboard height while one of its fields is focused.</summary>
         public static void Lift(VisualElement element)
         {
             element.RegisterCallback<AttachToPanelEvent>(evt => WatchTaps(evt.destinationPanel));
+            var watch = WatchHeight(element, keyboard => LiftBy(element, keyboard));
             element.RegisterCallback<FocusInEvent>(evt =>
             {
-                if (FieldArea(evt.target as VisualElement) == null) return;
-                foreach (var delay in RevealDelaysMs)
-                    element.schedule.Execute(() => LiftBy(element, HeightInPanel(element))).StartingIn(delay);
+                if (FieldArea(evt.target as VisualElement) != null) watch.Start();
             }, TrickleDown.TrickleDown);
             element.RegisterCallback<FocusOutEvent>(_ =>
-                element.schedule.Execute(() =>
+            {
+                watch.Stop();
+                WhenReleased(element, () =>
                 {
                     if (!HasFocusedField(element)) LiftBy(element, 0);
-                }).StartingIn(RevealDelaysMs[0]), TrickleDown.TrickleDown);
+                });
+            }, TrickleDown.TrickleDown);
+        }
+
+        sealed class HeightWatch
+        {
+            public Action Start;
+            public Action Stop;
+        }
+
+        // Calls back with the keyboard height each time it changes while started.
+        static HeightWatch WatchHeight(VisualElement owner, Action<float> changed)
+        {
+            var applied = -1f;
+            IVisualElementScheduledItem item = null;
+            void Check()
+            {
+                var keyboard = HeightInPanel(owner);
+                if (Mathf.Abs(keyboard - applied) < 1f) return;
+                applied = keyboard;
+                changed(keyboard);
+            }
+            return new HeightWatch
+            {
+                Start = () =>
+                {
+                    applied = -1f;
+                    item?.Pause();
+                    item = owner.schedule.Execute(Check).StartingIn(FirstCheckMs).Every(CheckEveryMs);
+                },
+                Stop = () => item?.Pause()
+            };
+        }
+
+        // A tap outside a field closes the keyboard on touch down. The layout waits for the finger to lift,
+        // so the button under it stays put and still gets the click.
+        static void WhenReleased(VisualElement element, Action action)
+        {
+            IVisualElementScheduledItem wait = null;
+            wait = element.schedule.Execute(() =>
+            {
+                if (_pointerHeld) return;
+                wait.Pause();
+                action();
+            }).StartingIn(FirstCheckMs).Every(16);
         }
 
         // Also caps the height, so a lifted element never runs off the top of the screen.
@@ -61,8 +119,10 @@ namespace GrovsTestApp
             {
                 element.style.bottom = StyleKeyword.Null;
                 element.style.maxHeight = StyleKeyword.Null;
+                Cover(element, 0);
                 return;
             }
+            Cover(element, keyboard);
             element.style.bottom = keyboard;
             element.style.maxHeight = Mathf.Max(0, element.panel.visualTree.layout.height - keyboard - Above);
         }
@@ -77,7 +137,7 @@ namespace GrovsTestApp
         }
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-        // Unity's single line input strip that sits above the Android keyboard.
+        // Unity keeps its input strip window above the Android keyboard even when the strip is hidden, and that window takes the touches.
         const float InputStripDp = 56;
 
         // TouchScreenKeyboard.area reads 0 on Android, so the window's visible frame is used instead.
@@ -115,6 +175,7 @@ namespace GrovsTestApp
             var spacer = Spacer(scroll);
             spacer.BringToFront();
             spacer.style.height = keyboard;
+            Cover(scroll, keyboard);
             scroll.schedule.Execute(() => ScrollTo(scroll, field, keyboard)).StartingIn(16);
         }
 
@@ -134,7 +195,28 @@ namespace GrovsTestApp
 
         static void ClearRoom(ScrollView scroll)
         {
-            if (!HasFocusedField(scroll.contentContainer)) Spacer(scroll).style.height = 0;
+            if (HasFocusedField(scroll.contentContainer)) return;
+            Spacer(scroll).style.height = 0;
+            Cover(scroll, 0);
+        }
+
+        // Unity's input strip window above the keyboard takes touches even where nothing is drawn,
+        // so that band is painted in the background colour instead of showing content that cannot be tapped.
+        static void Cover(VisualElement element, float height)
+        {
+            if (element.panel == null) return;
+            var host = Overlay.HostFor(element);
+            var cover = host.Q(CoverName);
+            if (cover == null)
+            {
+                if (height <= 0) return;
+                cover = new VisualElement { name = CoverName, pickingMode = PickingMode.Ignore };
+                cover.AddToClassList(CoverName);
+                host.Add(cover);
+            }
+            cover.style.height = height;
+            cover.style.display = height > 0 ? DisplayStyle.Flex : DisplayStyle.None;
+            cover.BringToFront();
         }
 
         // Room at the end of the content so the last fields can scroll above the keyboard.
@@ -153,10 +235,13 @@ namespace GrovsTestApp
             if (panel == null || !WatchedPanels.Add(panel)) return;
             panel.visualTree.RegisterCallback<PointerDownEvent>(evt =>
             {
+                _pointerHeld = true;
                 var focused = panel.focusController.focusedElement as VisualElement;
                 if (FieldArea(focused) == null || FieldArea(evt.target as VisualElement) != null) return;
                 focused.Blur();
             }, TrickleDown.TrickleDown);
+            panel.visualTree.RegisterCallback<PointerUpEvent>(_ => _pointerHeld = false, TrickleDown.TrickleDown);
+            panel.visualTree.RegisterCallback<PointerCancelEvent>(_ => _pointerHeld = false, TrickleDown.TrickleDown);
             panel.visualTree.RegisterCallback<DetachFromPanelEvent>(_ => WatchedPanels.Remove(panel));
         }
 

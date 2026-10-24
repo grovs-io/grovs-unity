@@ -167,6 +167,23 @@ namespace GrovsTestApp.Tests
         }
 
         [Test]
+        public void Leaving_a_field_without_the_keyboard_done_key_does_not_submit()
+        {
+            var submitted = 0;
+            var blurred = 0;
+            var field = new AppTextField("name");
+            field.Submitted += () => submitted++;
+            field.Blurred += () => blurred++;
+            _root.Add(field);
+
+            field.Input.Focus();
+            field.Input.Blur();
+
+            Assert.AreEqual(0, submitted);
+            Assert.AreEqual(1, blurred);
+        }
+
+        [Test]
         public void Toast_never_catches_taps()
         {
             Toast.Show(_root, "Copied");
