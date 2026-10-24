@@ -302,3 +302,29 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* Settings */
+
+.settings__trailing {
+    flex-shrink: 1;
+    margin-left: 16px;
+}
+
+.settings__value {
+    color: var(--text-muted);
+    white-space: normal;
+    flex-shrink: 1;
+    -unity-text-align: middle-right;
+}
+
+.settings__value--error {
+    color: var(--error);
+}
+
+.settings__segment--level {
+    width: 140px;
+}
+
+.settings__segment--style {
+    width: 170px;
+}

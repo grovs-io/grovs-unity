@@ -188,7 +188,7 @@ namespace GrovsTestApp
             if (divider) Add(Ui.Divider());
         }
 
-        protected void MakeTappable(Action onClick)
+        public void MakeTappable(Action onClick)
         {
             _content.AddToClassList("setting-row__content--tappable");
             Ui.OnTap(_content, onClick);
