@@ -140,3 +140,69 @@
 .receipt-field {
     min-height: 120px;
 }
+
+/* In-app */
+
+.in-app > .screen,
+.excluded-view > .screen {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.in-app__row {
+    flex-direction: row;
+    align-items: center;
+}
+
+.in-app__grow {
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.in-app__small {
+    margin-left: 6px;
+    min-width: 72px;
+}
+
+.in-app__second {
+    margin-left: 8px;
+}
+
+.in-app__gap {
+    margin-top: 10px;
+}
+
+.in-app__chevron {
+    color: var(--text-faint);
+}
+
+/* Excluded screen */
+
+.excluded-view {
+    flex-grow: 1;
+    background-color: var(--background);
+}
+
+.excluded-view__intro {
+    color: var(--text-muted);
+    white-space: normal;
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.excluded-view__latest {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.excluded-view__text {
+    flex-shrink: 1;
+    margin-left: 8px;
+    color: var(--text-muted);
+    white-space: normal;
+}
+
+.excluded-view__back {
+    margin-top: 16px;
+}

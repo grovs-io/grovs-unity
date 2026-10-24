@@ -74,6 +74,14 @@ namespace GrovsTestApp
         /// <summary>The scaffold of the scene that is showing now.</summary>
         public AppScaffold Scaffold { get; internal set; }
 
+        /// <summary>The tab a new scaffold opens on, so a scene change comes back to where the user was.</summary>
+        public Tab SelectedTab { get; set; } = Tab.Home;
+
+        /// <summary>
+        /// Whether in-app messages are running. The SDK has no getter, so this follows what the app last asked for.
+        /// </summary>
+        public bool InAppRunning { get; set; } = true;
+
         public NotificationStatus Notifications { get; private set; }
 
         /// <summary>Raised when the app comes back to the front, after the link and notification status are read again.</summary>
@@ -111,6 +119,17 @@ namespace GrovsTestApp
             ReadLastDeeplink();
             Log.Add(LogType.Sdk, LogState.Ok, "SDK configured", SdkLog.ConfiguredDetail(Config), SdkLog.ConfiguredCode(Config));
             Notifications = Native.GetNotificationStatus();
+        }
+
+        /// <summary>Sends the saved trigger as an event. A trigger that worked goes to the front of the recent ones.</summary>
+        public async Task<LogEntry> FireTrigger(InAppPrefs prefs)
+        {
+            var name = prefs.Trigger.Trim();
+            var entry = await Runner.Run(InApp.Trigger(name));
+            if (entry.State == LogState.Error) return entry;
+            Recents.Remember(prefs.RecentTriggers, name);
+            Store.Save(FormKeys.InApp, prefs);
+            return entry;
         }
 
         public void Rerun(TestAction action) => _ = Runner.Run(action);

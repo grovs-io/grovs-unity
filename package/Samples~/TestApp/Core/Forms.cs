@@ -116,6 +116,9 @@ namespace GrovsTestApp
         public List<string> RecentTriggers = new List<string>();
         public bool DebugLogging = true;
         public List<string> Excluded = new List<string> { "ExcludedScreen" };
+
+        public bool Excludes(string screen) =>
+            Excluded.Exists(name => string.Equals(name, screen, StringComparison.OrdinalIgnoreCase));
     }
 
     [Serializable]

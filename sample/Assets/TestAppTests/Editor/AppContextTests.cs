@@ -28,5 +28,38 @@ namespace GrovsTestApp.Tests
             second.BlockAll = true;
             Assert.That(Grovs.ShouldShowInAppMessage("c1"), Is.False);
         }
+
+        [Test]
+        public void A_new_scaffold_opens_on_the_selected_tab_and_remembers_changes()
+        {
+            var ctx = AppContext.Current;
+            Assert.That(ctx.SelectedTab, Is.EqualTo(Tab.Home));
+
+            ctx.SelectedTab = Tab.InApp;
+            var scaffold = new AppScaffold(ctx);
+            Assert.That(scaffold.Current, Is.EqualTo(Tab.InApp));
+
+            scaffold.ShowTab(Tab.Links);
+            Assert.That(ctx.SelectedTab, Is.EqualTo(Tab.Links));
+            Assert.That(new AppScaffold(ctx).Current, Is.EqualTo(Tab.Links));
+        }
+
+        [Test]
+        public void In_app_messages_start_running()
+        {
+            Assert.That(AppContext.Current.InAppRunning, Is.True);
+        }
+
+        [Test]
+        public void Excluded_screens_match_ignoring_case()
+        {
+            var prefs = new InAppPrefs();
+            Assert.That(prefs.Excludes("ExcludedScreen"), Is.True);
+            Assert.That(prefs.Excludes("excludedscreen"), Is.True);
+            Assert.That(prefs.Excludes("TestApp"), Is.False);
+
+            prefs.Excluded.Clear();
+            Assert.That(prefs.Excludes("ExcludedScreen"), Is.False);
+        }
     }
 }

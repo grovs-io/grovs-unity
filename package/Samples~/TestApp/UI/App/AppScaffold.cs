@@ -44,7 +44,7 @@ namespace GrovsTestApp
         Transition _settingsTransition;
         bool _typing;
 
-        public Tab Current { get; private set; } = Tab.Home;
+        public Tab Current { get; private set; }
         public bool SettingsOpen { get; private set; }
 
         public event Action<Tab> TabChanged;
@@ -52,6 +52,7 @@ namespace GrovsTestApp
         public AppScaffold(AppContext ctx)
         {
             _ctx = ctx;
+            Current = ctx.SelectedTab;
             AddToClassList("scaffold");
 
             _main = Ui.Box("scaffold__main");
@@ -107,6 +108,7 @@ namespace GrovsTestApp
             _items[Current].Selected = false;
             _items[tab].Selected = true;
             Current = tab;
+            _ctx.SelectedTab = tab;
 
             var shift = Width(_content) / 12f;
             to.style.display = DisplayStyle.Flex;

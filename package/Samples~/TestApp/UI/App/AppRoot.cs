@@ -4,12 +4,17 @@ using UnityEngine.UIElements;
 
 namespace GrovsTestApp
 {
+    /// <summary>What the scene shows: the whole app, or only the excluded screen.</summary>
+    public enum AppRootView { App, ExcludedScreen }
+
     [RequireComponent(typeof(UIDocument))]
     public class AppRoot : MonoBehaviour
     {
         const string LightClass = "theme-light";
         const string DarkClass = "theme-dark";
         const string RootName = "root";
+
+        [SerializeField] AppRootView _view = AppRootView.App;
 
         public static AppRoot Instance { get; private set; }
 
@@ -23,6 +28,7 @@ namespace GrovsTestApp
         Vector2Int _appliedScreen;
         bool _themeRead;
         bool _overlayWasOpen;
+        ExcludedScreenView _excludedScreen;
 
         void Awake()
         {
@@ -76,17 +82,23 @@ namespace GrovsTestApp
                 ApplySafeArea();
 
             AppContext.Current.FlushBlocked();
-            Scaffold.SetTyping(TouchScreenKeyboard.visible);
+            Scaffold?.SetTyping(TouchScreenKeyboard.visible);
 
 #if ENABLE_LEGACY_INPUT_MANAGER
             // A back press while a sheet or dialog was open belongs to that overlay, which closes itself.
-            if (Input.GetKeyDown(KeyCode.Escape) && !_overlayWasOpen && Overlay.Newest == null) Scaffold.HandleBack();
+            if (Input.GetKeyDown(KeyCode.Escape) && !_overlayWasOpen && Overlay.Newest == null) HandleBack();
 #endif
         }
 
         void LateUpdate()
         {
             _overlayWasOpen = Overlay.Newest != null;
+        }
+
+        void HandleBack()
+        {
+            if (_excludedScreen != null) _excludedScreen.Back();
+            else Scaffold.HandleBack();
         }
 
         public void SetDarkMode(bool dark)
@@ -107,6 +119,12 @@ namespace GrovsTestApp
         {
             Root.Clear();
             var ctx = AppContext.Current;
+            if (_view == AppRootView.ExcludedScreen)
+            {
+                _excludedScreen = new ExcludedScreenView(ctx);
+                Root.Add(_excludedScreen);
+                return;
+            }
             Scaffold = new AppScaffold(ctx);
             Root.Add(Scaffold);
             ctx.Scaffold = Scaffold;
