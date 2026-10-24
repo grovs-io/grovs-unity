@@ -20,6 +20,8 @@ namespace GrovsTestApp
         public const string ChevronRight = "M9 6 L15 12 L9 18";
         public const string ChevronDown = "M6 9 L12 15 L18 9";
         public const string ChevronUp = "M6 15 L12 9 L18 15";
+        public const string Gear =
+            "M16 12 a4 4 0 1 0 -8 0 a4 4 0 1 0 8 0 M12 2.5 V5 M12 19 V21.5 M2.5 12 H5 M19 12 H21.5 M5.3 5.3 L7.1 7.1 M16.9 16.9 L18.7 18.7 M5.3 18.7 L7.1 16.9 M16.9 7.1 L18.7 5.3";
         public const string Refresh = "M19 12 A7 7 0 1 1 16.95 7.05 M12.95 7.05 H16.95 V3.05";
 
         public static string For(Tab tab)

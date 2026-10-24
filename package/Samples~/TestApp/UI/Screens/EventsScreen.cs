@@ -265,10 +265,7 @@ namespace GrovsTestApp
 
         static KeyValueRow Copy(KeyValueRow row) => new KeyValueRow { Key = row.Key, Value = row.Value, Kind = row.Kind };
 
-        bool PurchaseValid() =>
-            Money.ParseCents(_purchase.Amount) != null
-            && !string.IsNullOrWhiteSpace(_purchase.Currency)
-            && !string.IsNullOrWhiteSpace(_purchase.Product);
+        bool PurchaseValid() => EventFormFields.PurchaseValid(_purchase);
 
         void BuildPurchase()
         {

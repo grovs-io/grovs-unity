@@ -206,3 +206,93 @@
 .excluded-view__back {
     margin-top: 16px;
 }
+
+/* Home */
+
+.home__header {
+    flex-direction: row;
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 4px;
+}
+
+.home__logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background-color: var(--accent);
+    align-items: center;
+    justify-content: center;
+}
+
+.home__logo-text {
+    color: #FFFFFF;
+    -unity-font-definition: url("Fonts/Geist-Bold SDF.asset");
+}
+
+.home__title {
+    flex-grow: 1;
+    margin-left: 8px;
+}
+
+.home__caption {
+    color: var(--text-muted);
+    margin-right: 4px;
+}
+
+.home__muted {
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+}
+
+.home__empty {
+    color: var(--text-muted);
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+
+.home__chips {
+    margin-top: 6px;
+}
+
+.home__gap {
+    margin-top: 10px;
+}
+
+.home__buttons {
+    flex-direction: row;
+    margin-top: 10px;
+    margin-left: -8px;
+}
+
+.home__buttons > * {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 8px;
+}
+
+.home__grid-row {
+    flex-direction: row;
+    margin-left: -8px;
+}
+
+.home__grid-row > * {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 8px;
+}
+
+.home__grid-row--second {
+    margin-top: 8px;
+}
+
+.home__sheet-title {
+    margin-bottom: 8px;
+}
+
+.home__sheet-button {
+    margin-top: 12px;
+}

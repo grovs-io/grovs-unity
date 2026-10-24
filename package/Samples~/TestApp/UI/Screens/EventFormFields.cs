@@ -22,6 +22,11 @@ namespace GrovsTestApp
 
         public static string EventError(EventForm form) => EventRules.NameError(form.Name) ?? EventRules.TagsError(form.Tags);
 
+        public static bool PurchaseValid(PurchaseForm form) =>
+            Money.ParseCents(form.Amount) != null
+            && !string.IsNullOrWhiteSpace(form.Currency)
+            && !string.IsNullOrWhiteSpace(form.Product);
+
         public static VisualElement BuildEvent(EventForm form, Action changed, Action sendAnyway, Action submit = null)
         {
             var root = Ui.Box("event-form");

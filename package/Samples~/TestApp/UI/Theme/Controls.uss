@@ -111,6 +111,10 @@
     margin-left: 8px;
 }
 
+.setting-row__trailing > .status-pill {
+    align-self: center;
+}
+
 /* Switch: Material 3 sizes */
 
 .app-switch {
