@@ -72,7 +72,7 @@ namespace GrovsTestApp
             _chips = chipScroll.contentContainer;
             _list.Add(chipScroll);
 
-            _rows = new ScrollView(ScrollViewMode.Vertical);
+            _rows = new ScrollView(ScrollViewMode.Vertical) { verticalScrollerVisibility = ScrollerVisibility.Hidden };
             _rows.AddToClassList("logs__rows");
             _list.Add(_rows);
 
@@ -173,7 +173,7 @@ namespace GrovsTestApp
             _detail.Add(header);
 
             var copyText = string.IsNullOrWhiteSpace(entry.Code) ? entry.Detail ?? "" : entry.Code;
-            var code = new ScrollView(ScrollViewMode.Vertical);
+            var code = new ScrollView(ScrollViewMode.Vertical) { verticalScrollerVisibility = ScrollerVisibility.Hidden };
             code.AddToClassList("logs__code");
             code.Add(Ui.Text(copyText, "t-mono", "logs__code-text"));
             _detail.Add(code);
