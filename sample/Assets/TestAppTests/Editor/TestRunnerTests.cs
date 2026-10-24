@@ -113,8 +113,8 @@ namespace GrovsTestApp.Tests
             var ex = new GrovsException(new GrovsError { Code = GrovsErrorCode.SdkDisabled, Message = "off" });
             var entry = Run(Action(() => throw ex));
             Assert.AreEqual(LogState.Error, entry.State);
-            Assert.AreEqual("off", entry.Detail);
-            Assert.AreEqual("track()\n\n-> " + ex, entry.Code);
+            Assert.AreEqual("SdkDisabled: off", entry.Detail);
+            Assert.AreEqual("track()\n\n-> GrovsException: SdkDisabled: off", entry.Code);
             Assert.IsTrue(_log.HasUnseenError);
         }
 
@@ -125,7 +125,7 @@ namespace GrovsTestApp.Tests
             var entry = Run(Action(() => Task.FromException<ActionResult>(ex)));
             Assert.AreEqual(LogState.Error, entry.State);
             Assert.AreEqual(ex.Message, entry.Detail);
-            Assert.AreEqual("track()\n\n-> " + ex, entry.Code);
+            Assert.AreEqual("track()\n\n-> ArgumentException: bad arg", entry.Code);
         }
     }
 }

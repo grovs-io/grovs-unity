@@ -210,7 +210,8 @@ namespace GrovsTestApp
             }
             catch (Exception e)
             {
-                Log.Add(LogType.Sdk, LogState.Error, action.Title + " failed", e.Message, action.Code + "\n\n-> " + e);
+                var detail = TestRunner.Describe(e);
+                Log.Add(LogType.Sdk, LogState.Error, action.Title + " failed", detail, action.Code + "\n\n-> " + e.GetType().Name + ": " + detail);
             }
         }
 

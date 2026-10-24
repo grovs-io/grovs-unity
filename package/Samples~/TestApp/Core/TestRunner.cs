@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using GrovsSDK;
 
 namespace GrovsTestApp
 {
@@ -28,8 +29,8 @@ namespace GrovsTestApp
                 result = new ActionResult
                 {
                     State = LogState.Error,
-                    Detail = string.IsNullOrEmpty(e.Message) ? e.GetType().Name : e.Message,
-                    Code = action.Code + "\n\n-> " + e
+                    Detail = Describe(e),
+                    Code = action.Code + "\n\n-> " + e.GetType().Name + ": " + Describe(e)
                 };
             }
 
@@ -44,6 +45,13 @@ namespace GrovsTestApp
             var entry = _log.Add(action.Type, result.State, action.Title, detail, result.Code ?? action.Code, action, link);
             entry.ElapsedMs = elapsed;
             return entry;
+        }
+
+        /// <summary>The message of an exception, with the Grovs error code when there is one. No stack trace.</summary>
+        public static string Describe(Exception e)
+        {
+            if (e is GrovsException grovs && grovs.Error != null) return grovs.Error.ToString();
+            return string.IsNullOrEmpty(e.Message) ? e.GetType().Name : e.Message;
         }
     }
 }

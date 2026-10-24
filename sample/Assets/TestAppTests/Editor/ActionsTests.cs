@@ -109,7 +109,7 @@ namespace GrovsTestApp.Tests
             _api.CallbackError = new GrovsError { Code = GrovsErrorCode.SdkDisabled, Message = "off" };
             var entry = Run(_links.Generate(new LinkForm()));
             Assert.AreEqual(LogState.Error, entry.State);
-            Assert.AreEqual("off", entry.Detail);
+            Assert.AreEqual("SdkDisabled: off", entry.Detail);
         }
 
         [Test]
