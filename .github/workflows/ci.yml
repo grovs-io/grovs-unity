@@ -164,6 +164,7 @@ jobs:
           key: library-android-${{ matrix.unityVersion }}-${{ matrix.backend }}-${{ hashFiles('grovs-unity/sample/Packages/packages-lock.json') }}
           restore-keys: library-android-${{ matrix.unityVersion }}-${{ matrix.backend }}-
 
+      # The build artifacts are downloadable by anyone, so the sample keeps its placeholder settings.
       - uses: game-ci/unity-builder@v4.3.0
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -177,10 +178,6 @@ jobs:
           customParameters: >-
             -GROVS_ANDROID_BACKEND ${{ matrix.backend }}
             -GROVS_ANDROID_MINIFY ${{ matrix.minify }}
-            -GROVS_TEST_KEY ${{ secrets.GROVS_TEST_KEY }}
-            -GROVS_PROD_KEY ${{ secrets.GROVS_PROD_KEY }}
-            -GROVS_URI_SCHEME ${{ secrets.GROVS_URI_SCHEME }}
-            -GROVS_LINK_DOMAINS ${{ secrets.GROVS_LINK_DOMAINS }}
 
       - uses: actions/upload-artifact@v4.6.2
         with:
@@ -206,6 +203,7 @@ jobs:
           key: library-ios-${{ matrix.unityVersion }}-${{ hashFiles('grovs-unity/sample/Packages/packages-lock.json') }}
           restore-keys: library-ios-${{ matrix.unityVersion }}-
 
+      # The build artifacts are downloadable by anyone, so the sample keeps its placeholder settings.
       - uses: game-ci/unity-builder@v4.3.0
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -216,11 +214,6 @@ jobs:
           unityVersion: ${{ matrix.unityVersion }}
           targetPlatform: iOS
           buildMethod: GrovsSampleBuild.BuildIOSSimulator
-          customParameters: >-
-            -GROVS_TEST_KEY ${{ secrets.GROVS_TEST_KEY }}
-            -GROVS_PROD_KEY ${{ secrets.GROVS_PROD_KEY }}
-            -GROVS_URI_SCHEME ${{ secrets.GROVS_URI_SCHEME }}
-            -GROVS_LINK_DOMAINS ${{ secrets.GROVS_LINK_DOMAINS }}
 
       - name: Pack the Xcode project
         run: tar -czf ios-export.tgz -C grovs-unity/build ios
