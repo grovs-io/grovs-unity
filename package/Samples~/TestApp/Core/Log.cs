@@ -62,6 +62,8 @@ namespace GrovsTestApp
         public string Code;
         /// <summary>False for setters: running an old one again would leave the screen showing a newer value than the SDK has.</summary>
         public bool Repeatable = true;
+        /// <summary>The call style the action was built with, for calls that have both styles.</summary>
+        public CallStyle? Style;
         public Func<Task<ActionResult>> Run;
     }
 

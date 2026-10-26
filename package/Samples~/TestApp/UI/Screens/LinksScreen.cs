@@ -17,6 +17,7 @@ namespace GrovsTestApp
         LinkForm _form;
         TestAction _lastAction;
         bool _running;
+        bool _inspecting;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Register() => AppContext.RegisterScreen(Tab.Links, ctx => new LinksScreen(ctx));
@@ -71,10 +72,25 @@ namespace GrovsTestApp
         /// <summary>Loads what Grovs stores for the link and shows it in the logs.</summary>
         public async void Inspect(string link)
         {
-            var path = LinkPath.Extract(link);
-            if (path == null) return;
+            if (_inspecting) return;
             _inspect.SetValueWithoutNotify(link);
-            var entry = await _ctx.Runner.Run(_ctx.Links.Inspect(path));
+            var path = LinkPath.Extract(link);
+            if (path == null)
+            {
+                if (!string.IsNullOrWhiteSpace(link)) Toast.Show(Overlay.HostFor(this), "Not a Grovs link");
+                return;
+            }
+
+            _inspecting = true;
+            LogEntry entry;
+            try
+            {
+                entry = await _ctx.Runner.Run(_ctx.Links.Inspect(path));
+            }
+            finally
+            {
+                _inspecting = false;
+            }
             _ctx.Scaffold?.OpenLogs(entry);
         }
 
@@ -136,7 +152,7 @@ namespace GrovsTestApp
             var header = Ui.Box("result-card__header");
             header.Add(new StatusDot(ok ? LogState.Ok : LogState.Error));
             var status = ok
-                ? "Created · " + entry.ElapsedMs + " ms · " + Calls.StyleLabel(_ctx.Developer.CallStyle)
+                ? "Created · " + entry.ElapsedMs + " ms · " + Calls.StyleLabel(entry.Action?.Style ?? _ctx.Developer.CallStyle)
                 : "Failed";
             header.Add(Ui.Text(status, "t-caption", "result-card__status"));
             var again = new IconButton(TabIcons.Refresh, RunAgain);

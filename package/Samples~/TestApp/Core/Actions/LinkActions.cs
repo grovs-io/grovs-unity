@@ -43,6 +43,7 @@ namespace GrovsTestApp
                 Type = LogType.Create,
                 Title = "Generate link",
                 Code = code,
+                Style = style,
                 Run = async () =>
                 {
                     var link = style == CallStyle.Async
@@ -67,6 +68,7 @@ namespace GrovsTestApp
                 Type = LogType.Inspect,
                 Title = "Link details " + path,
                 Code = code,
+                Style = style,
                 Run = async () =>
                 {
                     var details = style == CallStyle.Async

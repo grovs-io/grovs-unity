@@ -93,6 +93,17 @@ namespace GrovsTestApp.Tests
         }
 
         [Test]
+        public void Link_actions_keep_the_call_style_they_were_built_with()
+        {
+            _style = CallStyle.Callback;
+            var generate = _links.Generate(new LinkForm());
+            var inspect = _links.Inspect("abc");
+            _style = CallStyle.Async;
+            Assert.AreEqual(CallStyle.Callback, generate.Style);
+            Assert.AreEqual(CallStyle.Callback, inspect.Style);
+        }
+
+        [Test]
         public void Generate_callback_style_uses_the_callback_method_only()
         {
             _style = CallStyle.Callback;
