@@ -18,7 +18,6 @@ Every action writes an entry to the log. To build it with your own Grovs project
 
 ```
 export GROVS_PROD_KEY=... GROVS_TEST_KEY=... GROVS_URI_SCHEME=... GROVS_LINK_DOMAINS=... GROVS_CLIPBOARD_DOMAINS=...
-export GROVS_BASE_URL=https://api.example.com
 "$UNITY" -batchmode -quit -projectPath sample -buildTarget Android -executeMethod GrovsSampleBuild.BuildAndroid
 ```
 
