@@ -9,12 +9,12 @@ let package = Package(
         .library(name: "GrovsUnityHooks", targets: ["GrovsUnityHooks"]),
     ],
     dependencies: [
-        .package(name: "Grovs", path: "../grovs-iOS"),
+        .package(url: "https://github.com/grovs-io/grovs-iOS.git", from: "3.1.0"),
     ],
     targets: [
         .target(
             name: "GrovsUnityBridge",
-            dependencies: [.product(name: "Grovs", package: "Grovs")],
+            dependencies: [.product(name: "Grovs", package: "grovs-iOS")],
             path: "package/Runtime/Plugins/iOS/GrovsUnityBridge",
             // Unity writes a .meta file next to every source.
             exclude: [

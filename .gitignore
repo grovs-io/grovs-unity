@@ -11,6 +11,7 @@ native/android/local.properties
 # iOS bridge
 .build/
 .swiftpm/
+Package.resolved
 
 # Unity sample project
 sample/Library/

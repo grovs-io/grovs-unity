@@ -65,7 +65,7 @@ Each value can also be passed on the Unity command line as `-NAME value`, for ex
 
 ## Local native SDK setup
 
-Until native Grovs 3.1.0 is public, the sample builds against local checkouts of the native SDKs, kept next to this repo (`../grovs-iOS` and `../grovs-Android`).
+The sample can build against local checkouts of the native SDKs ([grovs-iOS](https://github.com/grovs-io/grovs-iOS) and [grovs-Android](https://github.com/grovs-io/grovs-Android)), kept next to this repo.
 
 **iOS.** Set `GROVS_IOS_POD_PATH` to your `grovs-iOS` checkout before an iOS build:
 

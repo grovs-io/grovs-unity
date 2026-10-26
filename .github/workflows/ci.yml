@@ -5,13 +5,6 @@ on:
   push:
     branches: [main]
 
-# The native Grovs 3.1 SDKs are private until they ship, so CI checks them out next to this repo.
-# The two repos are in different organizations: GROVS_ANDROID_REPO_TOKEN needs read access to the
-# Android one and GROVS_IOS_REPO_TOKEN to the iOS one. One token with access to both can fill both secrets.
-env:
-  GROVS_ANDROID_REPO: grovs-io/grovs-Android
-  GROVS_IOS_REPO: grovs-io/grovs-iOS
-
 jobs:
   android-bridge:
     name: Android bridge tests and AARs
@@ -21,27 +14,11 @@ jobs:
         with:
           path: grovs-unity
 
-      - uses: actions/checkout@v4.2.2
-        with:
-          repository: ${{ env.GROVS_ANDROID_REPO }}
-          token: ${{ secrets.GROVS_ANDROID_REPO_TOKEN }}
-          path: grovs-Android
-
       - uses: actions/setup-java@v4.7.1
         with:
           distribution: temurin
           java-version: "17"
           cache: gradle
-
-      - name: Use a local Maven repository inside the workspace
-        run: |
-          mkdir -p ~/.gradle "$GITHUB_WORKSPACE/m2"
-          echo "systemProp.maven.repo.local=$GITHUB_WORKSPACE/m2" >> ~/.gradle/gradle.properties
-
-      - name: Publish the native SDK to the local Maven repository
-        working-directory: grovs-Android/Grovs
-        # The "maven" publication has a pom with the runtime dependencies. CI has no signing key.
-        run: ./gradlew :Grovs:publishMavenPublicationToMavenLocal -x :Grovs:signMavenPublication
 
       - name: Bridge unit tests
         working-directory: grovs-unity/native/android
@@ -56,12 +33,6 @@ jobs:
           path: grovs-unity/package/Runtime/Plugins/Android/*.aar
           if-no-files-found: error
 
-      - uses: actions/upload-artifact@v4.6.2
-        with:
-          name: native-maven
-          path: m2/io/grovs
-          if-no-files-found: error
-
   ios-bridge:
     name: iOS bridge tests
     runs-on: macos-14
@@ -69,12 +40,6 @@ jobs:
       - uses: actions/checkout@v4.2.2
         with:
           path: grovs-unity
-
-      - uses: actions/checkout@v4.2.2
-        with:
-          repository: ${{ env.GROVS_IOS_REPO }}
-          token: ${{ secrets.GROVS_IOS_REPO_TOKEN }}
-          path: grovs-iOS
 
       - name: xcodebuild test
         working-directory: grovs-unity
@@ -145,18 +110,6 @@ jobs:
         with:
           name: android-aars
           path: grovs-unity/package/Runtime/Plugins/Android
-
-      - uses: actions/download-artifact@v4.3.0
-        with:
-          name: native-maven
-          path: m2/io/grovs
-
-      # The builder runs in a container that mounts the workspace at /github/workspace.
-      - name: Point the sample at the local Maven repository
-        run: |
-          sed -i 's#<repository>file://[^<]*</repository>#<repository>file:///github/workspace/m2</repository>#' \
-            grovs-unity/sample/Assets/Editor/GrovsDevDependencies.xml
-          grep -q 'file:///github/workspace/m2' grovs-unity/sample/Assets/Editor/GrovsDevDependencies.xml
 
       - uses: actions/cache@v4.2.3
         with:
@@ -233,12 +186,6 @@ jobs:
       matrix:
         unityVersion: [2022.3.62f3, 6000.0.85f1]
     steps:
-      - uses: actions/checkout@v4.2.2
-        with:
-          repository: ${{ env.GROVS_IOS_REPO }}
-          token: ${{ secrets.GROVS_IOS_REPO_TOKEN }}
-          path: grovs-iOS
-
       - uses: actions/download-artifact@v4.3.0
         with:
           name: ios-export-${{ matrix.unityVersion }}
@@ -246,12 +193,10 @@ jobs:
       - name: Unpack the Xcode project
         run: mkdir -p build && tar -xzf ios-export.tgz -C build
 
-      - name: Install pods from the local native SDK
+      - name: Install pods
         working-directory: build/ios
         run: |
           test -f Podfile || { echo "The export has no Podfile."; exit 1; }
-          sed -i '' -E "s#^([[:space:]]*)pod 'Grovs'.*#\1pod 'Grovs', :path => '$GITHUB_WORKSPACE/grovs-iOS'#" Podfile
-          grep -q ":path => '$GITHUB_WORKSPACE/grovs-iOS'" Podfile
           pod install
 
       - name: xcodebuild for the simulator
