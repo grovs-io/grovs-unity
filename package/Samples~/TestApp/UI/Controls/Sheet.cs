@@ -14,6 +14,9 @@ namespace GrovsTestApp
 
         public event Action Closed;
 
+        /// <summary>Gets the first say on a back press; returning true keeps the overlay open.</summary>
+        public Func<bool> BackHandler { get; set; }
+
         internal OverlayHandle(Action dismiss)
         {
             _dismiss = dismiss;
@@ -25,6 +28,13 @@ namespace GrovsTestApp
             IsOpen = false;
             _dismiss();
             Closed?.Invoke();
+        }
+
+        public void HandleBack()
+        {
+            if (!IsOpen) return;
+            if (BackHandler != null && BackHandler()) return;
+            Close();
         }
 
         // For an overlay removed without Close, for example when its screen is rebuilt.
@@ -116,9 +126,13 @@ namespace GrovsTestApp
         // polled, only while the item is open.
         static void CloseOnBack(VisualElement item, OverlayHandle handle)
         {
+            var handledFrame = -1;
             item.schedule.Execute(() =>
             {
-                if (handle.IsOpen && IsNewest(handle) && Input.GetKeyDown(KeyCode.Escape)) handle.Close();
+                if (!handle.IsOpen || !IsNewest(handle) || !Input.GetKeyDown(KeyCode.Escape)) return;
+                if (handledFrame == Time.frameCount) return;
+                handledFrame = Time.frameCount;
+                handle.HandleBack();
             }).Every(0);
         }
 #else
@@ -133,7 +147,7 @@ namespace GrovsTestApp
             {
                 if (evt.keyCode != KeyCode.Escape || !IsNewest(handle)) return;
                 evt.StopPropagation();
-                handle.Close();
+                handle.HandleBack();
             }
         }
 #endif

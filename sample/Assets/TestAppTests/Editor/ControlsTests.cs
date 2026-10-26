@@ -254,6 +254,24 @@ namespace GrovsTestApp.Tests
         }
 
         [Test]
+        public void Back_handler_can_keep_the_sheet_open()
+        {
+            var sheet = Sheet.Show(_root, new Label("detail"));
+            var inDetail = true;
+            sheet.BackHandler = () =>
+            {
+                if (!inDetail) return false;
+                inDetail = false;
+                return true;
+            };
+
+            sheet.HandleBack();
+            Assert.IsTrue(sheet.IsOpen);
+            sheet.HandleBack();
+            Assert.IsFalse(sheet.IsOpen);
+        }
+
+        [Test]
         public void AppButton_ignores_clicks_while_disabled()
         {
             var clicks = 0;

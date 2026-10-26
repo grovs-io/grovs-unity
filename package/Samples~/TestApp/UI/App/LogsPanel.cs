@@ -24,6 +24,7 @@ namespace GrovsTestApp
         readonly VisualElement _detail;
         OverlayHandle _handle;
         long? _selectedId;
+        bool _showingDetail;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetStatics()
@@ -43,6 +44,7 @@ namespace GrovsTestApp
             var panel = new LogsPanel(ctx, focus);
             _open = panel;
             panel._handle = Sheet.Show(panel, HeightFraction);
+            panel._handle.BackHandler = panel.LeaveDetail;
             panel._handle.Closed += () =>
             {
                 // Errors that arrived while the panel was open have been seen.
@@ -94,9 +96,18 @@ namespace GrovsTestApp
             Render();
         }
 
+        /// <summary>Back from the detail view returns to the list instead of closing the sheet.</summary>
+        bool LeaveDetail()
+        {
+            if (!_showingDetail) return false;
+            Select(null);
+            return true;
+        }
+
         void Render()
         {
             var selected = _selectedId.HasValue ? _ctx.Log.Entries.FirstOrDefault(e => e.Id == _selectedId.Value) : null;
+            _showingDetail = selected != null;
             _list.style.display = selected == null ? DisplayStyle.Flex : DisplayStyle.None;
             _detail.style.display = selected == null ? DisplayStyle.None : DisplayStyle.Flex;
             if (selected == null) RenderList();

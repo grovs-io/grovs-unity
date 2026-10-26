@@ -15,6 +15,7 @@ namespace GrovsTestApp
         readonly AppContext _ctx;
         readonly InAppPrefs _prefs;
         readonly VisualElement _latest;
+        bool _leaving;
 
         public ExcludedScreenView(AppContext ctx)
         {
@@ -50,8 +51,13 @@ namespace GrovsTestApp
             RegisterCallback<DetachFromPanelEvent>(_ => ctx.Log.Changed -= RefreshLatest);
         }
 
-        /// <summary>Returns to the main scene, which opens on the tab the user left.</summary>
-        public void Back() => SceneManager.LoadScene(MainScene);
+        /// <summary>Returns to the main scene, which opens on the tab the user left. Only the first press loads it.</summary>
+        public void Back()
+        {
+            if (_leaving) return;
+            _leaving = true;
+            SceneManager.LoadScene(MainScene);
+        }
 
         VisualElement Header()
         {
