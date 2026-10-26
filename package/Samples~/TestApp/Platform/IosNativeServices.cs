@@ -33,7 +33,6 @@ namespace GrovsTestApp
 #endif
 
         public string Platform => "iOS";
-        public bool CanRestart => false;
 
         public bool IsDarkMode() => GrovsTestApp_IsDarkMode();
 
@@ -56,8 +55,6 @@ namespace GrovsTestApp
         }
 
         public void OpenAppSettings() => GrovsTestApp_OpenSettings();
-
-        public void Restart() => Application.Quit();
 
         public BakedConfig ReadBakedConfig()
         {

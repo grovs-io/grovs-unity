@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -21,8 +20,6 @@ namespace GrovsTestApp
         public VisualElement Root { get; private set; }
         public AppScaffold Scaffold { get; private set; }
         public bool IsDark { get; private set; }
-
-        public event Action<bool> DarkModeChanged;
 
         Rect _appliedSafeArea;
         Vector2Int _appliedScreen;
@@ -103,10 +100,8 @@ namespace GrovsTestApp
 
         public void SetDarkMode(bool dark)
         {
-            var changed = dark != IsDark;
             IsDark = dark;
             ApplyTheme();
-            if (changed) DarkModeChanged?.Invoke(dark);
         }
 
         void ApplyTheme()

@@ -6,7 +6,6 @@ namespace GrovsTestApp
     public class EditorNativeServices : INativeServices
     {
         public string Platform => "Editor";
-        public bool CanRestart => false;
 
         public bool IsDarkMode()
         {
@@ -27,8 +26,6 @@ namespace GrovsTestApp
         public void RequestNotifications(Action<NotificationStatus> done) => done?.Invoke(NotificationStatus.Unknown);
 
         public void OpenAppSettings() { }
-
-        public void Restart() { }
 
         public BakedConfig ReadBakedConfig() => ReadBakedConfigStatic();
 

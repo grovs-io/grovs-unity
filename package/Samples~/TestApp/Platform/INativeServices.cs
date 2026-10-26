@@ -13,13 +13,11 @@ namespace GrovsTestApp
     public interface INativeServices
     {
         string Platform { get; }
-        bool CanRestart { get; }
         bool IsDarkMode();
         void Share(string text);
         NotificationStatus GetNotificationStatus();
         void RequestNotifications(Action<NotificationStatus> done);
         void OpenAppSettings();
-        void Restart();
         BakedConfig ReadBakedConfig();
         void GetPushToken(Action<string> done);
         string ShareCommand(string link);

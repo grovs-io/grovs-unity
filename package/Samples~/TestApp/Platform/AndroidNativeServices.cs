@@ -10,7 +10,6 @@ namespace GrovsTestApp
         const int NotificationPermissionApi = 33;
 
         public string Platform => "Android";
-        public bool CanRestart => true;
 
         static AndroidJavaObject Activity
         {
@@ -93,29 +92,6 @@ namespace GrovsTestApp
             {
                 intent.Call<AndroidJavaObject>("addFlags", 0x10000000);
                 activity.Call("startActivity", intent);
-            }
-        }
-
-        public void Restart()
-        {
-            using (var activity = Activity)
-            using (var manager = activity.Call<AndroidJavaObject>("getPackageManager"))
-            using (var launch = manager.Call<AndroidJavaObject>("getLaunchIntentForPackage", Application.identifier))
-            {
-                if (launch == null) return;
-                Relaunch(activity, launch);
-            }
-        }
-
-        static void Relaunch(AndroidJavaObject activity, AndroidJavaObject launch)
-        {
-            using (var component = launch.Call<AndroidJavaObject>("getComponent"))
-            using (var intentClass = new AndroidJavaClass("android.content.Intent"))
-            using (var restart = intentClass.CallStatic<AndroidJavaObject>("makeRestartActivityTask", component))
-            using (var process = new AndroidJavaClass("android.os.Process"))
-            {
-                activity.Call("startActivity", restart);
-                process.CallStatic("killProcess", process.CallStatic<int>("myPid"));
             }
         }
 
