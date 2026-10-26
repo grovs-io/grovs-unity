@@ -24,7 +24,10 @@ namespace GrovsTestApp
             new Dictionary<Tab, Func<AppContext, VisualElement>>();
         static Func<AppContext, VisualElement> _settingsFactory;
 
-        public static AppContext Current => _current ??= new AppContext();
+        public static AppContext Current => _current ??= new AppContext(Prefs);
+
+        /// <summary>Where the next context keeps forms and link history. Tests replace it with an in-memory store.</summary>
+        public static IPrefs Prefs { get; set; } = new PlayerPrefsStore();
 
         /// <summary>
         /// Play Mode can start without a domain reload, which keeps static fields. The SDK clears its
@@ -33,7 +36,9 @@ namespace GrovsTestApp
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         public static void ResetStatics()
         {
+            _current?.Unsubscribe();
             _current = null;
+            Prefs = new PlayerPrefsStore();
             ScreenFactories.Clear();
             _settingsFactory = null;
         }
@@ -98,9 +103,8 @@ namespace GrovsTestApp
             set => _blockAll = value;
         }
 
-        AppContext()
+        AppContext(IPrefs prefs)
         {
-            var prefs = new PlayerPrefsStore();
             var clock = Stopwatch.StartNew();
             Log = new TestLog(new PrefsLinkHistory(prefs, LinkHistoryKey), () => DateTime.Now);
             Runner = new TestRunner(Log, () => clock.Elapsed.TotalMilliseconds);
@@ -218,14 +222,26 @@ namespace GrovsTestApp
         void Subscribe()
         {
             Grovs.DeeplinkReceived += OnDeeplink;
-            Grovs.ErrorOccurred += error =>
-                Log.Add(LogType.Sdk, LogState.Error, "SDK error " + error.Code, error.Message,
-                    CallCode.Format("ErrorOccurred", ("Code", error.Code.ToString()), ("Message", error.Message)));
-            Grovs.InAppMessageEvent += e =>
-            {
-                var (state, title, detail, code) = SdkLog.InApp(e);
-                Log.Add(LogType.InApp, state, title, detail, code);
-            };
+            Grovs.ErrorOccurred += OnError;
+            Grovs.InAppMessageEvent += OnInAppMessage;
+        }
+
+        void Unsubscribe()
+        {
+            Grovs.DeeplinkReceived -= OnDeeplink;
+            Grovs.ErrorOccurred -= OnError;
+            Grovs.InAppMessageEvent -= OnInAppMessage;
+            if (Grovs.ShouldShowInAppMessage == (Func<string, bool>)AllowMessage) Grovs.ShouldShowInAppMessage = null;
+        }
+
+        void OnError(GrovsError error) =>
+            Log.Add(LogType.Sdk, LogState.Error, "SDK error " + error.Code, error.Message,
+                CallCode.Format("ErrorOccurred", ("Code", error.Code.ToString()), ("Message", error.Message)));
+
+        void OnInAppMessage(InAppMessageEvent e)
+        {
+            var (state, title, detail, code) = SdkLog.InApp(e);
+            Log.Add(LogType.InApp, state, title, detail, code);
         }
 
         void OnDeeplink(GrovsDeeplink deeplink)

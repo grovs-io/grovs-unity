@@ -5,10 +5,49 @@ namespace GrovsTestApp.Tests
 {
     public class AppContextTests
     {
+        MemoryPrefs _prefs;
+
+        [SetUp]
+        public void SetUp()
+        {
+            AppContext.ResetStatics();
+            _prefs = new MemoryPrefs();
+            AppContext.Prefs = _prefs;
+        }
+
         [TearDown]
         public void TearDown()
         {
             AppContext.ResetStatics();
+        }
+
+        [Test]
+        public void Context_keeps_forms_in_the_given_prefs()
+        {
+            AppContext.Current.Store.Save(FormKeys.Link, new LinkForm());
+            Assert.That(_prefs.Values.ContainsKey(FormKeys.Link), Is.True);
+        }
+
+        [Test]
+        public void Reset_removes_the_message_hook_and_restores_player_prefs()
+        {
+            var _ = AppContext.Current;
+            Assert.That(Grovs.ShouldShowInAppMessage, Is.Not.Null);
+
+            AppContext.ResetStatics();
+            Assert.That(Grovs.ShouldShowInAppMessage, Is.Null);
+            Assert.That(AppContext.Prefs, Is.InstanceOf<PlayerPrefsStore>());
+        }
+
+        [Test]
+        public void Reset_keeps_a_message_hook_the_context_did_not_set()
+        {
+            var _ = AppContext.Current;
+            System.Func<string, bool> other = id => true;
+            Grovs.ShouldShowInAppMessage = other;
+
+            AppContext.ResetStatics();
+            Assert.That(Grovs.ShouldShowInAppMessage, Is.SameAs(other));
             Grovs.ShouldShowInAppMessage = null;
         }
 
@@ -21,6 +60,7 @@ namespace GrovsTestApp.Tests
             // What the SDK does to its own hooks when Play Mode starts without a domain reload.
             Grovs.ShouldShowInAppMessage = null;
             AppContext.ResetStatics();
+            AppContext.Prefs = _prefs;
 
             var second = AppContext.Current;
             Assert.That(second, Is.Not.SameAs(first));

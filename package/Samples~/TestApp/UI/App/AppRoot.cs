@@ -67,6 +67,14 @@ namespace GrovsTestApp
             AppContext.Current.OnResume();
         }
 
+        // PlayerPrefs are written to disk only here, not on every change.
+        void OnApplicationPause(bool paused)
+        {
+            if (paused) PlayerPrefs.Save();
+        }
+
+        void OnApplicationQuit() => PlayerPrefs.Save();
+
         void OnDestroy()
         {
             if (Instance == this) Instance = null;

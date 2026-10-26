@@ -10,21 +10,14 @@ namespace GrovsTestApp
         void Delete(string key);
     }
 
+    /// <summary>PlayerPrefs in memory. AppRoot writes them to disk when the app pauses or quits.</summary>
     public sealed class PlayerPrefsStore : IPrefs
     {
         public string Get(string key) => PlayerPrefs.HasKey(key) ? PlayerPrefs.GetString(key) : null;
 
-        public void Set(string key, string value)
-        {
-            PlayerPrefs.SetString(key, value);
-            PlayerPrefs.Save();
-        }
+        public void Set(string key, string value) => PlayerPrefs.SetString(key, value);
 
-        public void Delete(string key)
-        {
-            PlayerPrefs.DeleteKey(key);
-            PlayerPrefs.Save();
-        }
+        public void Delete(string key) => PlayerPrefs.DeleteKey(key);
     }
 
     public static class FormKeys
