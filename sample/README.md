@@ -63,11 +63,9 @@ A Mono build makes EDM4U rewrite the ABI exclusions in `Assets/Plugins/Android/m
 
 Each value can also be passed on the Unity command line as `-NAME value`, for example `-GROVS_ANDROID_BACKEND Mono`. The environment variable wins when both are set. Never commit real keys.
 
-## Local native SDK setup
+## Local native iOS SDK
 
-The sample can build against local checkouts of the native SDKs ([grovs-iOS](https://github.com/grovs-io/grovs-iOS) and [grovs-Android](https://github.com/grovs-io/grovs-Android)), kept next to this repo.
-
-**iOS.** Set `GROVS_IOS_POD_PATH` to your `grovs-iOS` checkout before an iOS build:
+The sample can build against a local checkout of [grovs-iOS](https://github.com/grovs-io/grovs-iOS). Set `GROVS_IOS_POD_PATH` to it before an iOS build:
 
 ```
 export GROVS_IOS_POD_PATH="$(cd ../grovs-iOS && pwd)"   # run from the repo root
@@ -76,16 +74,3 @@ export GROVS_IOS_POD_PATH="$(cd ../grovs-iOS && pwd)"   # run from the repo root
 Use an absolute path: Unity resolves a relative one against its own working folder.
 
 `Assets/Editor/GrovsDevOverrides.cs` then rewrites the `pod 'Grovs'` line of the generated Podfile to `pod 'Grovs', :path => '...'`. Without the variable, the Podfile is left alone.
-
-**Android.** Publish the native SDK to your local Maven repository:
-
-```
-cd ../grovs-Android/Grovs
-./gradlew :Grovs:publishMavenPublicationToMavenLocal -x :Grovs:signMavenPublication
-```
-
-This publishes the `maven` publication, whose pom lists the runtime dependencies. Skipping the signing task means no signing key is needed.
-
-EDM4U adds the local Maven repository (`mavenLocal()`) to the build, so nothing else needs to change.
-
-`Assets/Editor/GrovsDevDependencies.xml` pins `io.grovs:Grovs:3.1.0` instead of the package's `[3.1.0,3.2)` range. A local Maven repository has no `maven-metadata.xml`, so Gradle cannot match a version range against it. The file also declares the native SDK's runtime dependencies by hand, so it still works with a pom published from the `release` publication, which lists none.
