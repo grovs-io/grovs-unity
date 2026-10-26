@@ -4,6 +4,16 @@
   "displayName": "Grovs",
   "description": "Grovs deep linking, attribution and in-app messages for Unity.",
   "unity": "2022.3",
+  "license": "MIT",
+  "author": {
+    "name": "Grovs",
+    "email": "support@grovs.io",
+    "url": "https://grovs.io"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grovs-io/grovs-unity.git"
+  },
   "samples": [
     {
       "displayName": "Test app",
