@@ -5,9 +5,11 @@ namespace GrovsTestApp
 {
     public class EditorNativeServices : INativeServices
     {
+#if UNITY_EDITOR
         const string SettingsAssetPath = "Assets/Grovs/GrovsSettings.asset";
         const int ProductionEnvironment = 1;
         static readonly string[] LogLevelNames = { "info", "warn", "error" };
+#endif
 
         public string Platform => "Editor";
 

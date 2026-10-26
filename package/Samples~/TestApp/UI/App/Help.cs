@@ -65,7 +65,7 @@ namespace GrovsTestApp
 
             // Settings
             ["apiKey"] = ("API key",
-                "Identifies your Grovs project, so the SDK sends data to the right place. Copy it from your project in the Grovs dashboard. Changes apply after a restart."),
+                "Identifies your Grovs project, so the SDK sends data to the right place. Copy it from your project in the Grovs dashboard. Changes apply after a rebuild."),
             ["environment"] = ("Environment",
                 "Each Grovs project has a test environment and a live (Prod) one, with separate data. Use Test while building so you don't mix test data with real users. Use the API key that matches."),
             ["baseUrl"] = ("Base URL",
