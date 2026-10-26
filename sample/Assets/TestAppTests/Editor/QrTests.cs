@@ -16,19 +16,21 @@ namespace GrovsTestApp.Tests
         }
 
         [Test]
-        public void Texture_has_a_one_module_white_border_and_point_filtering()
+        public void Texture_has_a_four_module_quiet_zone_and_point_filtering()
         {
             var modules = QrSheet.Encode("https://x.sqd.link/abc");
             var texture = QrSheet.Render(modules);
             try
             {
                 var size = modules.GetLength(0);
-                Assert.That(texture.width, Is.EqualTo(size + 2));
-                Assert.That(texture.height, Is.EqualTo(size + 2));
+                Assert.That(QrSheet.Border, Is.EqualTo(4));
+                Assert.That(texture.width, Is.EqualTo(size + 8));
+                Assert.That(texture.height, Is.EqualTo(size + 8));
                 Assert.That(texture.filterMode, Is.EqualTo(FilterMode.Point));
                 Assert.That(texture.GetPixel(0, 0), Is.EqualTo(Color.white));
-                // The top-left finder pattern starts right inside the border (texture rows run bottom up).
-                Assert.That(texture.GetPixel(1, size), Is.EqualTo(Color.black));
+                Assert.That(texture.GetPixel(3, size + 4), Is.EqualTo(Color.white));
+                // The top-left finder pattern starts right inside the quiet zone (texture rows run bottom up).
+                Assert.That(texture.GetPixel(4, size + 3), Is.EqualTo(Color.black));
             }
             finally
             {

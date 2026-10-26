@@ -7,7 +7,7 @@ namespace GrovsTestApp
     /// <summary>A QR code of a link, to open it on another phone.</summary>
     public static class QrSheet
     {
-        const int Border = 1;
+        public const int Border = 4;
 
         public static OverlayHandle Show(string link)
         {
@@ -27,9 +27,9 @@ namespace GrovsTestApp
             buttons.Add(new AppButton(command, () => Copy(content, native.ShareCommand(link)), AppButtonStyle.Outline));
             content.Add(buttons);
 
-            var handle = Sheet.Show(content);
-            handle.Closed += () => Object.Destroy(texture);
-            return handle;
+            // Destroyed once the sheet has left the screen, after its close animation.
+            image.RegisterCallback<DetachFromPanelEvent>(_ => Object.Destroy(texture));
+            return Sheet.Show(content);
         }
 
         /// <summary>The dark modules of the code, [x, y] with y going down.</summary>
@@ -43,7 +43,7 @@ namespace GrovsTestApp
             return modules;
         }
 
-        /// <summary>One pixel per module, black on white, with a one module border. Point filtered so it scales sharp.</summary>
+        /// <summary>One pixel per module, black on white, with the standard four module quiet zone. Point filtered so it scales sharp.</summary>
         public static Texture2D Render(bool[,] modules)
         {
             var size = modules.GetLength(0);
