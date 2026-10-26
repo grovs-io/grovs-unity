@@ -107,7 +107,7 @@ namespace GrovsTestApp
         {
             var clock = Stopwatch.StartNew();
             Log = new TestLog(new PrefsLinkHistory(prefs, LinkHistoryKey), () => DateTime.Now);
-            Runner = new TestRunner(Log, () => clock.Elapsed.TotalMilliseconds);
+            Runner = new TestRunner(Log, () => clock.Elapsed.TotalMilliseconds, UnityEngine.Debug.LogException);
             Store = new FormStore(prefs);
             Api = new GrovsApi();
             Native = NativeServices.Current;

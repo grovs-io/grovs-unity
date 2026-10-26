@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using GrovsSDK;
 using NUnit.Framework;
@@ -16,13 +17,15 @@ namespace GrovsTestApp.Tests
         double _ms;
         TestLog _log;
         TestRunner _runner;
+        List<Exception> _reported;
 
         [SetUp]
         public void SetUp()
         {
             _ms = 0;
             _log = new TestLog(new NoStore(), () => DateTime.Now);
-            _runner = new TestRunner(_log, () => { var v = _ms; _ms += 12; return v; });
+            _reported = new List<Exception>();
+            _runner = new TestRunner(_log, () => { var v = _ms; _ms += 12; return v; }, _reported.Add);
         }
 
         LogEntry Run(TestAction action) => _runner.Run(action).GetAwaiter().GetResult();
@@ -116,6 +119,7 @@ namespace GrovsTestApp.Tests
             Assert.AreEqual("SdkDisabled: off", entry.Detail);
             Assert.AreEqual("track()\n\n-> GrovsException: SdkDisabled: off", entry.Code);
             Assert.IsTrue(_log.HasUnseenError);
+            Assert.IsEmpty(_reported);
         }
 
         [Test]
@@ -126,6 +130,7 @@ namespace GrovsTestApp.Tests
             Assert.AreEqual(LogState.Error, entry.State);
             Assert.AreEqual(ex.Message, entry.Detail);
             Assert.AreEqual("track()\n\n-> ArgumentException: bad arg", entry.Code);
+            CollectionAssert.AreEqual(new[] { ex }, _reported);
         }
     }
 }

@@ -9,11 +9,14 @@ namespace GrovsTestApp
     {
         readonly TestLog _log;
         readonly Func<double> _nowMs;
+        readonly Action<Exception> _reportUnexpected;
 
-        public TestRunner(TestLog log, Func<double> nowMs)
+        /// <param name="reportUnexpected">Gets every exception that is not a GrovsException, with its stack trace.</param>
+        public TestRunner(TestLog log, Func<double> nowMs, Action<Exception> reportUnexpected = null)
         {
             _log = log;
             _nowMs = nowMs;
+            _reportUnexpected = reportUnexpected;
         }
 
         public async Task<LogEntry> Run(TestAction action)
@@ -26,6 +29,7 @@ namespace GrovsTestApp
             }
             catch (Exception e)
             {
+                if (!(e is GrovsException)) _reportUnexpected?.Invoke(e);
                 result = new ActionResult
                 {
                     State = LogState.Error,
