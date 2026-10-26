@@ -74,4 +74,25 @@ class GrovsUnityCodecTest {
     fun codec_errorJson() {
         assertEquals("{\"code\":\"unknown\",\"message\":null}", GrovsUnityCodec.errorJson("unknown", null))
     }
+
+    private fun nestedLists(depth: Int): List<Any?> = if (depth == 1) emptyList() else listOf(nestedLists(depth - 1))
+
+    private fun nestedArrays(depth: Int) = "[".repeat(depth) + "]".repeat(depth)
+
+    @Test
+    fun codec_writesUpToMaxDepth() {
+        assertEquals(nestedArrays(64), GrovsUnityCodec.toJson(nestedLists(64)))
+    }
+
+    @Test
+    fun codec_writesNullBeyondMaxDepth() {
+        assertEquals("[".repeat(64) + "null" + "]".repeat(64), GrovsUnityCodec.toJson(nestedLists(65)))
+        assertEquals("[".repeat(64) + "null" + "]".repeat(64), GrovsUnityCodec.toJson(nestedLists(5000)))
+    }
+
+    @Test
+    fun codec_parseObjectRejectsTooDeep() {
+        assertEquals(null, GrovsUnityCodec.parseObject("{\"a\":" + nestedArrays(64) + "}"))
+        assertEquals(1, GrovsUnityCodec.parseObject("{\"a\":" + nestedArrays(63) + "}")!!.size)
+    }
 }

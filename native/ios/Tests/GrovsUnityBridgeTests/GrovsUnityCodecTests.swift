@@ -74,4 +74,18 @@ final class GrovsUnityCodecTests: XCTestCase {
     func testErrorJSON() {
         XCTAssertEqual(GrovsUnityCodec.errorJSON(code: "unknown", message: nil), "{\"code\":\"unknown\",\"message\":null}")
     }
+
+    private func nestedArrays(_ depth: Int) -> [Any] {
+        depth == 1 ? [] : [nestedArrays(depth - 1)]
+    }
+
+    func testWritesUpToMaxDepth() {
+        XCTAssertEqual(GrovsUnityCodec.json(nestedArrays(64)), String(repeating: "[", count: 64) + String(repeating: "]", count: 64))
+    }
+
+    func testWritesNullBeyondMaxDepth() {
+        let truncated = String(repeating: "[", count: 64) + "null" + String(repeating: "]", count: 64)
+        XCTAssertEqual(GrovsUnityCodec.json(nestedArrays(65)), truncated)
+        XCTAssertEqual(GrovsUnityCodec.json(nestedArrays(500)), truncated)
+    }
 }

@@ -10,6 +10,8 @@ namespace GrovsSDK.Internal
     internal static class GrovsJson
     {
         const double MaxSafeInteger = 9007199254740992d;
+        const int MaxDepth = 64;
+        static readonly string TooDeep = "JSON is nested deeper than " + MaxDepth + " levels";
 
         public static object Parse(string json)
         {
@@ -22,11 +24,11 @@ namespace GrovsSDK.Internal
         public static string Serialize(object value)
         {
             var sb = new StringBuilder();
-            Write(sb, value);
+            Write(sb, value, 0);
             return sb.ToString();
         }
 
-        static void Write(StringBuilder sb, object value)
+        static void Write(StringBuilder sb, object value, int depth)
         {
             switch (value)
             {
@@ -59,10 +61,10 @@ namespace GrovsSDK.Internal
                     sb.Append(m.ToString(CultureInfo.InvariantCulture));
                     break;
                 case IDictionary dict:
-                    WriteObject(sb, dict);
+                    WriteObject(sb, dict, depth + 1);
                     break;
                 case IEnumerable list:
-                    WriteArray(sb, list);
+                    WriteArray(sb, list, depth + 1);
                     break;
                 default:
                     throw new ArgumentException("Unsupported type for JSON: " + value.GetType().FullName);
@@ -76,8 +78,9 @@ namespace GrovsSDK.Internal
             sb.Append(d.ToString("R", CultureInfo.InvariantCulture));
         }
 
-        static void WriteObject(StringBuilder sb, IDictionary dict)
+        static void WriteObject(StringBuilder sb, IDictionary dict, int depth)
         {
+            if (depth > MaxDepth) throw new ArgumentException(TooDeep);
             sb.Append('{');
             var first = true;
             foreach (DictionaryEntry entry in dict)
@@ -88,20 +91,21 @@ namespace GrovsSDK.Internal
                 first = false;
                 WriteString(sb, key);
                 sb.Append(':');
-                Write(sb, entry.Value);
+                Write(sb, entry.Value, depth);
             }
             sb.Append('}');
         }
 
-        static void WriteArray(StringBuilder sb, IEnumerable list)
+        static void WriteArray(StringBuilder sb, IEnumerable list, int depth)
         {
+            if (depth > MaxDepth) throw new ArgumentException(TooDeep);
             sb.Append('[');
             var first = true;
             foreach (var item in list)
             {
                 if (!first) sb.Append(',');
                 first = false;
-                Write(sb, item);
+                Write(sb, item, depth);
             }
             sb.Append(']');
         }
@@ -133,6 +137,7 @@ namespace GrovsSDK.Internal
         {
             readonly string _s;
             int _i;
+            int _depth;
 
             public Parser(string s) { _s = s; }
 
@@ -148,6 +153,11 @@ namespace GrovsSDK.Internal
             FormatException Error(string message)
             {
                 return new FormatException(message + " at position " + _i);
+            }
+
+            void Enter()
+            {
+                if (++_depth > MaxDepth) throw Error(TooDeep);
             }
 
             void SkipWhitespace()
@@ -180,9 +190,10 @@ namespace GrovsSDK.Internal
             Dictionary<string, object> ParseObject()
             {
                 var result = new Dictionary<string, object>();
+                Enter();
                 _i++;
                 SkipWhitespace();
-                if (_i < _s.Length && _s[_i] == '}') { _i++; return result; }
+                if (_i < _s.Length && _s[_i] == '}') { _i++; _depth--; return result; }
                 while (true)
                 {
                     SkipWhitespace();
@@ -196,7 +207,7 @@ namespace GrovsSDK.Internal
                     SkipWhitespace();
                     if (_i >= _s.Length) throw Error("Unterminated object");
                     if (_s[_i] == ',') { _i++; continue; }
-                    if (_s[_i] == '}') { _i++; return result; }
+                    if (_s[_i] == '}') { _i++; _depth--; return result; }
                     throw Error("Expected ',' or '}'");
                 }
             }
@@ -204,9 +215,10 @@ namespace GrovsSDK.Internal
             List<object> ParseArray()
             {
                 var result = new List<object>();
+                Enter();
                 _i++;
                 SkipWhitespace();
-                if (_i < _s.Length && _s[_i] == ']') { _i++; return result; }
+                if (_i < _s.Length && _s[_i] == ']') { _i++; _depth--; return result; }
                 while (true)
                 {
                     SkipWhitespace();
@@ -214,7 +226,7 @@ namespace GrovsSDK.Internal
                     SkipWhitespace();
                     if (_i >= _s.Length) throw Error("Unterminated array");
                     if (_s[_i] == ',') { _i++; continue; }
-                    if (_s[_i] == ']') { _i++; return result; }
+                    if (_s[_i] == ']') { _i++; _depth--; return result; }
                     throw Error("Expected ',' or ']'");
                 }
             }

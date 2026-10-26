@@ -92,5 +92,49 @@ namespace GrovsSDK.Tests
         {
             Assert.Throws<FormatException>(() => GrovsJson.Parse("{"));
         }
+
+        static string NestedArrays(int depth) => new string('[', depth) + new string(']', depth);
+
+        static List<object> NestedLists(int depth)
+        {
+            var root = new List<object>();
+            var current = root;
+            for (var i = 1; i < depth; i++)
+            {
+                var child = new List<object>();
+                current.Add(child);
+                current = child;
+            }
+            return root;
+        }
+
+        [Test]
+        public void Parse_AtMaxDepth_Succeeds()
+        {
+            Assert.IsInstanceOf<List<object>>(GrovsJson.Parse(NestedArrays(64)));
+            Assert.IsInstanceOf<Dictionary<string, object>>(GrovsJson.Parse("{\"a\":" + NestedArrays(63) + "}"));
+        }
+
+        [Test]
+        public void Parse_TooDeep_ThrowsFormatException()
+        {
+            Assert.Throws<FormatException>(() => GrovsJson.Parse(NestedArrays(65)));
+            Assert.Throws<FormatException>(() => GrovsJson.Parse(NestedArrays(100000)));
+        }
+
+        [Test]
+        public void Serialize_AtMaxDepth_Succeeds()
+        {
+            Assert.AreEqual(NestedArrays(64), GrovsJson.Serialize(NestedLists(64)));
+        }
+
+        [Test]
+        public void Serialize_TooDeepOrCyclic_ThrowsArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => GrovsJson.Serialize(NestedLists(65)));
+            var cycle = new List<object>();
+            cycle.Add(cycle);
+            Assert.Throws<ArgumentException>(() => GrovsJson.Serialize(cycle));
+        }
     }
 }

@@ -2,9 +2,10 @@ import Foundation
 
 enum GrovsUnityCodec {
     private static let isoFormatter = ISO8601DateFormatter()
+    private static let maxDepth = 64
 
     static func json(_ value: Any?) -> String {
-        let safe = sanitize(value)
+        let safe = sanitize(value, depth: 0)
         guard let data = try? JSONSerialization.data(withJSONObject: safe, options: [.fragmentsAllowed, .sortedKeys]),
               let text = String(data: data, encoding: .utf8) else {
             return "null"
@@ -46,7 +47,8 @@ enum GrovsUnityCodec {
         CFGetTypeID(number) == CFBooleanGetTypeID()
     }
 
-    private static func sanitize(_ value: Any?) -> Any {
+    // Values nested deeper than maxDepth become null, so a hostile payload cannot overflow the stack.
+    private static func sanitize(_ value: Any?, depth: Int) -> Any {
         switch value {
         case nil, is NSNull:
             return NSNull()
@@ -69,11 +71,13 @@ enum GrovsUnityCodec {
         case let url as URL:
             return url.absoluteString
         case let dict as [AnyHashable: Any]:
+            if depth == maxDepth { return NSNull() }
             var result = [String: Any]()
-            for (key, element) in dict { result["\(key)"] = sanitize(element) }
+            for (key, element) in dict { result["\(key)"] = sanitize(element, depth: depth + 1) }
             return result
         case let array as [Any]:
-            return array.map { sanitize($0) }
+            if depth == maxDepth { return NSNull() }
+            return array.map { sanitize($0, depth: depth + 1) }
         default:
             return "\(value!)"
         }
