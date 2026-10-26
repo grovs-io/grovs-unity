@@ -161,12 +161,19 @@ namespace GrovsTestApp
             };
             _body.Add(excluded);
 
-            var open = new SettingRow("Open an excluded screen", () => SceneManager.LoadScene(ExcludedScreenView.SceneName),
-                divider: false);
+            var open = new SettingRow("Open an excluded screen", OpenExcludedScreen, divider: false);
             var chevron = new StrokeIcon(TabIcons.ChevronRight);
             chevron.AddToClassList("in-app__chevron");
             open.Trailing.Add(chevron);
             _body.Add(open);
+        }
+
+        void OpenExcludedScreen()
+        {
+            if (Application.CanStreamedLevelBeLoaded(ExcludedScreenView.SceneName))
+                SceneManager.LoadScene(ExcludedScreenView.SceneName);
+            else
+                Toast.Show(Overlay.HostFor(this), "Add the ExcludedScreen scene to Build Settings");
         }
     }
 }
