@@ -2,10 +2,6 @@
 <!-- Sample only. Uses the native Grovs build published to mavenLocal. -->
 <dependencies>
   <androidPackages>
-    <repositories>
-      <repository>file:///path/to/.m2/repository</repository>
-    </repositories>
-
     <!-- mavenLocal has no maven-metadata.xml, so Gradle cannot match the package's version range here. -->
     <androidPackage spec="io.grovs:Grovs:3.1.0" />
 

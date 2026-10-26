@@ -86,6 +86,6 @@ cd ../grovs-Android/Grovs
 
 This publishes the `maven` publication, whose pom lists the runtime dependencies. Skipping the signing task means no signing key is needed.
 
-`Assets/Editor/GrovsDevDependencies.xml` adds that repository to the build. It uses an absolute path, `file:///path/to/.m2/repository`. **Edit it to your own home folder** (`file:///Users/<you>/.m2/repository`), and do not commit that change.
+EDM4U adds the local Maven repository (`mavenLocal()`) to the build, so nothing else needs to change.
 
-The same file pins `io.grovs:Grovs:3.1.0` instead of the package's `[3.1.0,3.2)` range. A local Maven repository has no `maven-metadata.xml`, so Gradle cannot match a version range against it. The file also declares the native SDK's runtime dependencies by hand, so it still works with a pom published from the `release` publication, which lists none.
+`Assets/Editor/GrovsDevDependencies.xml` pins `io.grovs:Grovs:3.1.0` instead of the package's `[3.1.0,3.2)` range. A local Maven repository has no `maven-metadata.xml`, so Gradle cannot match a version range against it. The file also declares the native SDK's runtime dependencies by hand, so it still works with a pom published from the `release` publication, which lists none.
