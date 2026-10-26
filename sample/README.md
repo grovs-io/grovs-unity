@@ -4,7 +4,7 @@ A Unity 2022.3 project that uses the Grovs package straight from `../package` (a
 
 ## Test app
 
-The project's scenes are the package's test app sample. `Assets/TestApp` is a link to `package/Samples~/TestApp`, so edits here change the sample that ships. The build has two scenes: `TestApp`, then `ExcludedScreen`.
+The project's scenes are the package's test app sample. `Assets/TestApp` is a link to `package/Samples~/TestApp`, so edits here change the sample that ships. On Windows, run `git config --global core.symlinks true` and turn on Developer Mode (or run Git as admin) before you clone, or the link is checked out as a plain file. The build has two scenes: `TestApp`, then `ExcludedScreen`.
 
 The app has four tabs and a settings screen:
 
@@ -12,7 +12,7 @@ The app has four tabs and a settings screen:
 - **Links**: generate a link, show it as a QR code, open it with `HandleUrl` and inspect it.
 - **Events**: events, screen views, purchases, global tags and screen aliases.
 - **In-app**: show, pause, resume and discard in-app messages, the excluded screens and a jump to the `ExcludedScreen` scene.
-- **Settings**: the config baked into the build, SDK enabled and developer settings.
+- **Settings**: the config baked into the build (including "Start with SDK enabled", read only) and developer settings. The "SDK enabled" switch is on Home.
 
 Every action writes an entry to the log. To build it with your own Grovs project:
 

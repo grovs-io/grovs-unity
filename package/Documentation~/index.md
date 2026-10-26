@@ -427,6 +427,8 @@ The test app has a screen for every Grovs feature: links, events, in-app message
 3. Set your keys in Project Settings. To test the excluded screen, turn on **Track scenes**: the scene name is then the current screen.
 4. Build to a device.
 
+On Android, the back button closes sheets and Settings only when **Active Input Handling** is **Input Manager (Old)** or **Both**.
+
 It needs no extra UPM packages. It draws its UI with UI Toolkit and bundles the Geist fonts (SIL Open Font License), a QR code generator (MIT) and a small Android library that declares the `POST_NOTIFICATIONS` permission. The licence files sit next to them.
 
 ## Troubleshooting
