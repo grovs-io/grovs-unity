@@ -25,8 +25,16 @@ namespace GrovsTestApp.Tests
         [Test]
         public void Longer_key_keeps_eight_characters_each_side()
         {
-            var key = "test_grovsu_01aecb88f7143385c98cb9b95f7e";
+            var key = "test_abcdef_0123456789abcdef0123456789ab";
             Assert.AreEqual(key.Substring(0, 8) + "…" + key.Substring(key.Length - 8), SettingsRules.ApiKey(key));
+        }
+
+        [Test]
+        public void Project_help_points_to_project_settings()
+        {
+            Assert.AreEqual(
+                "These come from Grovs settings at build time. To test another project, change the keys in Grovs settings (Project Settings) and rebuild.",
+                SettingsScreen.ProjectHelp);
         }
 
         [Test]

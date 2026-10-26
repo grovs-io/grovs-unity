@@ -40,8 +40,8 @@ namespace GrovsTestApp
     /// <summary>Settings, opened from Home: the project config baked into the build, and the developer options.</summary>
     public class SettingsScreen : VisualElement
     {
-        const string ProjectHelp =
-            "These come from Grovs settings at build time. To test another project, rebuild with GROVS_TEST_KEY, GROVS_PROD_KEY and GROVS_BASE_URL set.";
+        public const string ProjectHelp =
+            "These come from Grovs settings at build time. To test another project, change the keys in Grovs settings (Project Settings) and rebuild.";
 
         readonly AppContext _ctx;
 
