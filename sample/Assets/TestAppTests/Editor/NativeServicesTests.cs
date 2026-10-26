@@ -5,12 +5,16 @@ namespace GrovsTestApp.Tests
     public class NativeServicesTests
     {
         [Test]
-        public void Editor_config_has_an_empty_key_and_no_base_url()
+        public void Editor_config_comes_from_the_sample_grovs_settings()
         {
             var config = new EditorNativeServices().ReadBakedConfig();
-            Assert.AreEqual("", config.ApiKey);
+            Assert.AreEqual("GROVS_SAMPLE_PLACEHOLDER", config.ApiKey);
+            Assert.IsTrue(config.UseTestEnvironment);
             Assert.IsNull(config.BaseUrl);
             Assert.IsEmpty(config.ClipboardDomains);
+            Assert.IsTrue(config.TrackScenes);
+            Assert.IsTrue(config.StartEnabled);
+            Assert.AreEqual("error", config.LogLevel);
         }
 
         [Test]
