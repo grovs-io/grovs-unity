@@ -25,6 +25,21 @@ namespace GrovsTestApp
 
         public static VisualElement Divider() => Box("divider");
 
+        /// <summary>
+        /// Rounds the element into a capsule. A large USS radius is shrunk per axis, which draws an oval instead.
+        /// </summary>
+        public static void RoundAsPill(VisualElement element)
+        {
+            element.RegisterCallback<GeometryChangedEvent>(e =>
+            {
+                var radius = e.newRect.height / 2f;
+                element.style.borderTopLeftRadius = radius;
+                element.style.borderTopRightRadius = radius;
+                element.style.borderBottomLeftRadius = radius;
+                element.style.borderBottomRightRadius = radius;
+            });
+        }
+
         /// <summary>Calls onClick on a tap and shows a pressed state while the pointer is down.</summary>
         public static void OnTap(VisualElement element, Action onClick)
         {
@@ -356,6 +371,7 @@ namespace GrovsTestApp
         {
             AddToClassList("t-caption");
             AddToClassList("status-pill");
+            Ui.RoundAsPill(this);
             State = state;
         }
 

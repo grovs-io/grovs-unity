@@ -22,6 +22,7 @@ namespace GrovsTestApp
         public Chip(string text, Action onClick = null, bool selected = false, bool dashed = false, bool removable = false)
         {
             AddToClassList("chip");
+            Ui.RoundAsPill(this);
             _label = Ui.Text(text, "t-caption", "chip__text");
             Add(_label);
             if (removable) Add(Ui.Text(" ×", "t-caption", "chip__remove"));

@@ -207,7 +207,6 @@
 .status-pill {
     -unity-font-definition: url("Fonts/Geist-Medium SDF.asset");
     padding: 2px 8px;
-    border-radius: 999px;
     white-space: nowrap;
     align-self: flex-start;
 }
@@ -427,7 +426,6 @@
     flex-shrink: 0;
     min-height: 36px;
     padding: 8px 12px;
-    border-radius: 999px;
     border-width: 1px;
     border-color: var(--border);
     background-color: var(--background);

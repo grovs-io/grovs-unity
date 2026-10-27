@@ -107,6 +107,7 @@ namespace GrovsTestApp
         {
             AddToClassList("status-pill");
             AddToClassList("status-pill--checks");
+            Ui.RoundAsPill(this);
             Ui.SetStateClass(this, state);
             var first = true;
             foreach (var source in sources)
