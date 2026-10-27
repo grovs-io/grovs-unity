@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dependencies>
+  <iosPods>
+    <iosPod name="Grovs" version="~> 3.1" addToAllTargets="false" />
+  </iosPods>
+  <androidPackages>
+    <androidPackage spec="io.grovs:Grovs:[3.1.0,3.2)" />
+    <androidPackage spec="androidx.startup:startup-runtime:1.1.1" />
+    <androidPackage spec="com.google.android.play:review-ktx:2.0.2" />
+
+    <!-- The bridge AAR has no pom, so its own runtime deps are listed here. -->
+    <androidPackage spec="androidx.lifecycle:lifecycle-process:2.6.2" />
+    <androidPackage spec="org.jetbrains.kotlin:kotlin-stdlib:1.9.24" />
+  </androidPackages>
+</dependencies>

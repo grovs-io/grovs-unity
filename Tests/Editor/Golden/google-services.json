@@ -1,0 +1,26 @@
+{
+  "project_info": {
+    "project_number": "123456789012",
+    "project_id": "grovs-sample",
+    "storage_bucket": "grovs-sample.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123456789012:android:other",
+        "android_client_info": { "package_name": "com.other.app" }
+      },
+      "api_key": [ { "current_key": "other-key" } ]
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123456789012:android:abc123",
+        "android_client_info": { "package_name": "io.grovs.unity.sample" }
+      },
+      "oauth_client": [],
+      "api_key": [ { "current_key": "AIzaSampleKey" } ],
+      "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+    }
+  ],
+  "configuration_version": "1"
+}

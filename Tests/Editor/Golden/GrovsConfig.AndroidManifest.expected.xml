@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="io.grovs.unity.config">
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <application>
+        <meta-data android:name="grovs_api_key" android:value="test-key" />
+        <meta-data android:name="grovs_use_test_environment" android:value="false" />
+        <meta-data android:name="grovs_base_url" android:value="https://api.example.com" />
+        <meta-data android:name="grovs_enabled" android:value="true" />
+        <meta-data android:name="grovs_clipboard_domains" android:value="a.sqd.link,b.sqd.link" />
+        <meta-data android:name="grovs_log_level" android:value="warn" />
+        <meta-data android:name="grovs_unity_track_scenes" android:value="true" />
+        <meta-data android:name="io.grovs.NotificationIconSmall" android:value="ic_grovs" />
+    </application>
+</manifest>

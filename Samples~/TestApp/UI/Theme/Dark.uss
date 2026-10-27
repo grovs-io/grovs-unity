@@ -1,0 +1,19 @@
+.theme-dark {
+    --background: #0A0A0A;
+    --surface: #171717;
+    --text: #FAFAFA;
+    --text-muted: #A1A1A1;
+    --text-faint: #737373;
+    --border: rgba(255, 255, 255, 0.15);
+    --divider: rgba(255, 255, 255, 0.10);
+    --chip-fill: #262626;
+    --accent: #50A0FF;
+    --accent-soft: rgba(80, 160, 255, 0.12);
+    --ok: #34C46A;
+    --ok-soft: #1C5C31;
+    --warning: #F59E0B;
+    --warning-soft: rgba(245, 158, 11, 0.20);
+    --error: #F87171;
+    --error-soft: rgba(248, 113, 113, 0.20);
+    --neutral-dot: #525252;
+}

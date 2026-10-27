@@ -1,0 +1,31 @@
+{
+  "name": "GrovsSDK.IAP",
+  "rootNamespace": "GrovsSDK",
+  "references": [
+    "GrovsSDK.Runtime",
+    "UnityEngine.Purchasing",
+    "Unity.Purchasing"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [
+    "GROVS_UNITY_IAP"
+  ],
+  "versionDefines": [
+    {
+      "name": "com.unity.purchasing",
+      "expression": "4.0.0",
+      "define": "GROVS_UNITY_IAP"
+    },
+    {
+      "name": "com.unity.purchasing",
+      "expression": "5.0.0",
+      "define": "GROVS_UNITY_IAP5"
+    }
+  ],
+  "noEngineReferences": false
+}

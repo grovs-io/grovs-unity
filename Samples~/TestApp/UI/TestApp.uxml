@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="Theme/Theme.uss" />
+    <Style src="Theme/Light.uss" />
+    <Style src="Theme/Dark.uss" />
+    <Style src="Theme/Controls.uss" />
+    <Style src="Theme/App.uss" />
+    <Style src="Theme/Screens.uss" />
+    <ui:VisualElement name="root" class="app-root theme-light" />
+</ui:UXML>

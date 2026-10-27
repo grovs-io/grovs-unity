@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>CFBundleIdentifier</key>
+    <string>io.grovs.sample</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLName</key>
+        <string>io.grovs</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>grovssample</string>
+        </array>
+      </dict>
+    </array>
+    <key>GrovsApiKey</key>
+    <string>test-key</string>
+    <key>GrovsClipboardDomains</key>
+    <array>
+      <string>a.sqd.link</string>
+      <string>b.sqd.link</string>
+    </array>
+    <key>GrovsEnabled</key>
+    <true />
+    <key>GrovsLogLevel</key>
+    <string>warn</string>
+    <key>GrovsUnityOwnNotificationDelegate</key>
+    <false />
+    <key>GrovsUnityTrackScenes</key>
+    <true />
+    <key>GrovsUseTestEnvironment</key>
+    <false />
+  </dict>
+</plist>

@@ -1,0 +1,19 @@
+.theme-light {
+    --background: #FFFFFF;
+    --surface: #F8FAFC;
+    --text: #020617;
+    --text-muted: #64748B;
+    --text-faint: #94A3B8;
+    --border: #E2E8F0;
+    --divider: #EBEBEB;
+    --chip-fill: #F1F5F9;
+    --accent: #2A86FF;
+    --accent-soft: rgba(42, 134, 255, 0.08);
+    --ok: #1BA34B;
+    --ok-soft: #DDFBE7;
+    --warning: #D97706;
+    --warning-soft: #FEF3C7;
+    --error: #DC2626;
+    --error-soft: #FBE8E9;
+    --neutral-dot: #CBD5E1;
+}
