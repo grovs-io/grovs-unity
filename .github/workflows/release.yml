@@ -181,6 +181,7 @@ jobs:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: StandaloneLinux64
           buildMethod: GrovsExport.Export
+          versioning: None
 
       - name: Name the package
         run: |
