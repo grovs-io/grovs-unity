@@ -54,6 +54,9 @@ jobs:
   unity-tests:
     name: Unity EditMode tests (${{ matrix.unityVersion }})
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      checks: write
     strategy:
       fail-fast: false
       matrix:
