@@ -35,16 +35,16 @@ Pick one of these ways to add Grovs:
 **Git URL.** In Package Manager choose **Add package from git URL** and enter the release tag of the `upm` branch:
 
 ```
-https://github.com/grovs-io/grovs-unity.git#upm/v1.0.0
+https://github.com/grovs-io/grovs-unity.git#upm/1.0.0
 ```
 
 Or add it to `Packages/manifest.json`:
 
 ```json
-"com.grovs.sdk": "https://github.com/grovs-io/grovs-unity.git#upm/v1.0.0"
+"com.grovs.sdk": "https://github.com/grovs-io/grovs-unity.git#upm/1.0.0"
 ```
 
-Use the `upm/vX.Y.Z` tags, not the main branch: only the `upm` branch holds the prebuilt Android bridge libraries.
+Use the `upm/X.Y.Z` tags, not the main branch: only the `upm` branch holds the prebuilt Android bridge libraries.
 
 **OpenUPM.**
 

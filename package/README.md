@@ -8,7 +8,7 @@ Deep links, attribution, event tracking, revenue tracking, push campaigns and in
 
 ## Quick start
 
-1. Install EDM4U, then this package (git URL `https://github.com/grovs-io/grovs-unity.git#upm/v1.0.0`, OpenUPM `com.grovs.sdk`, or the `.unitypackage` from the GitHub release).
+1. Install EDM4U, then this package (git URL `https://github.com/grovs-io/grovs-unity.git#upm/1.0.0`, OpenUPM `com.grovs.sdk`, or the `.unitypackage` from the GitHub release).
 2. Open **Edit > Project Settings > Grovs** and enter the API key, URI scheme and link domains from the Grovs dashboard.
 3. Listen for links:
 

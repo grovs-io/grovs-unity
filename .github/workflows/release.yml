@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["[0-9]+.[0-9]+.[0-9]+"]
 
 permissions:
   contents: write
@@ -67,7 +67,7 @@ jobs:
 
       - name: Check the tag matches package.json
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="$GITHUB_REF_NAME"
           package_version=$(python3 -c 'import json; print(json.load(open("package/package.json"))["version"])')
           if [ "$version" != "$package_version" ]; then
             echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $package_version"
@@ -185,7 +185,7 @@ jobs:
       - name: Name the package
         run: |
           test -f Grovs.unitypackage
-          mv Grovs.unitypackage "Grovs-${GITHUB_REF_NAME#v}.unitypackage"
+          mv Grovs.unitypackage "Grovs-$GITHUB_REF_NAME.unitypackage"
 
       - uses: softprops/action-gh-release@v2.2.2
         with:
